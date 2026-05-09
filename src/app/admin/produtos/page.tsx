@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Product, Category } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import Button from '@/components/ui/Button'
-import { Plus, Pencil, Trash2, Upload, X, Search } from 'lucide-react'
+import { Plus, Pencil, Trash2, Upload, X, Search, Wand2 } from 'lucide-react'
 import Image from 'next/image'
 
 export default function ProdutosAdmin() {
@@ -18,6 +18,9 @@ export default function ProdutosAdmin() {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [convertModal, setConvertModal] = useState(false)
+  const [converting, setConverting] = useState(false)
+  const [convertPreview, setConvertPreview] = useState<{ id: string; name: string; before: string; after: string }[]>([])
 
   const [form, setForm] = useState({
     name: '', description: '', price: '', original_price: '',
@@ -106,6 +109,31 @@ export default function ProdutosAdmin() {
 
   const catName = (id: string) => categories.find(c => c.id === id)?.name ?? '—'
 
+  const openConvertModal = () => {
+    const preview = products
+      .filter(p => p.description && p.description.includes(', '))
+      .map(p => ({
+        id: p.id,
+        name: p.name,
+        before: p.description!,
+        after: p.description!.replace(/, /g, '\n'),
+      }))
+    setConvertPreview(preview)
+    setConvertModal(true)
+  }
+
+  const handleConvertAll = async () => {
+    setConverting(true)
+    await Promise.all(
+      convertPreview.map(p =>
+        supabase.from('products').update({ description: p.after }).eq('id', p.id)
+      )
+    )
+    await load()
+    setConverting(false)
+    setConvertModal(false)
+  }
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
@@ -113,9 +141,18 @@ export default function ProdutosAdmin() {
           <h1 className="text-2xl font-bold text-[var(--text)]">Produtos</h1>
           <p className="text-sm text-[var(--text-muted)]">{products.length} produtos cadastrados</p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus size={16} /> Novo produto
-        </Button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openConvertModal}
+            title="Converter vírgulas em quebras de linha nas descrições"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--red)] transition-colors"
+          >
+            <Wand2 size={15} /> Formatar descrições
+          </button>
+          <Button onClick={openCreate}>
+            <Plus size={16} /> Novo produto
+          </Button>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -278,6 +315,57 @@ export default function ProdutosAdmin() {
                 {modal === 'create' ? 'Criar produto' : 'Salvar alterações'}
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal converter descrições */}
+      {convertModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setConvertModal(false)} />
+          <div className="relative w-full max-w-2xl bg-[var(--bg-card)] rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] flex-shrink-0">
+              <div>
+                <h2 className="font-bold text-[var(--text)]">Formatar descrições</h2>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                  Substitui <code className="bg-[var(--bg-elevated)] px-1 rounded">, </code> por quebra de linha em {convertPreview.length} produto(s)
+                </p>
+              </div>
+              <button onClick={() => setConvertModal(false)} className="p-1 rounded text-[var(--text-muted)] hover:text-[var(--text)]"><X size={18} /></button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+              {convertPreview.length === 0 ? (
+                <p className="text-center text-[var(--text-muted)] py-8">Nenhuma descrição com vírgulas encontrada.</p>
+              ) : (
+                convertPreview.map(p => (
+                  <div key={p.id} className="border border-[var(--border)] rounded-xl overflow-hidden">
+                    <div className="px-3 py-2 bg-[var(--bg-elevated)] border-b border-[var(--border)]">
+                      <p className="text-sm font-medium text-[var(--text)]">{p.name}</p>
+                    </div>
+                    <div className="grid grid-cols-2 divide-x divide-[var(--border)]">
+                      <div className="p-3">
+                        <p className="text-xs text-[var(--text-muted)] mb-1 font-semibold">ANTES</p>
+                        <p className="text-xs text-[var(--text)] whitespace-pre-line">{p.before}</p>
+                      </div>
+                      <div className="p-3 bg-green-950/20">
+                        <p className="text-xs text-green-400 mb-1 font-semibold">DEPOIS</p>
+                        <p className="text-xs text-[var(--text)] whitespace-pre-line">{p.after}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {convertPreview.length > 0 && (
+              <div className="flex gap-3 px-5 py-4 border-t border-[var(--border)] flex-shrink-0">
+                <Button variant="outline" onClick={() => setConvertModal(false)} className="flex-1">Cancelar</Button>
+                <Button onClick={handleConvertAll} loading={converting} className="flex-1">
+                  Aplicar em todos ({convertPreview.length} produtos)
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
