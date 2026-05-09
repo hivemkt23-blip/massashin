@@ -9,12 +9,12 @@ export default async function AdminDashboard() {
   const [
     { data: orders },
     { data: orderItems },
-    { data: addresses },
+    { data: reviews },
   ] = await Promise.all([
     supabase.from('orders').select('*, addresses(neighborhood, city)').order('created_at', { ascending: false }),
     supabase.from('order_items').select('product_name, quantity, subtotal, order_id, orders(created_at, status)'),
-    supabase.from('addresses').select('neighborhood'),
+    supabase.from('reviews').select('*').order('created_at', { ascending: false }),
   ])
 
-  return <DashboardClient orders={orders ?? []} orderItems={orderItems ?? []} />
+  return <DashboardClient orders={orders ?? []} orderItems={orderItems ?? []} reviews={reviews ?? []} />
 }
