@@ -10,19 +10,21 @@ import PromoPopup from '@/components/catalog/PromoPopup'
 import ReorderSection from '@/components/catalog/ReorderSection'
 import Footer from '@/components/Footer'
 import { Search, X, Star, MessageSquare } from 'lucide-react'
+import Image from 'next/image'
 import ReviewForm from '@/components/catalog/ReviewForm'
 import ReviewsList from '@/components/catalog/ReviewsList'
 
 interface Props {
   categories: Category[]
   products: Product[]
+  bannerUrl?: string | null
 }
 
 const DESTAQUES_SLUG = '__destaques__'
 const REORDER_SLUG = '__reorder__'
 const AVALIACOES_SLUG = '__avaliacoes__'
 
-export default function CatalogClient({ categories, products }: Props) {
+export default function CatalogClient({ categories, products, bannerUrl }: Props) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [activeCategory, setActiveCategory] = useState(categories[0]?.slug ?? '')
   const [search, setSearch] = useState('')
@@ -95,7 +97,7 @@ export default function CatalogClient({ categories, products }: Props) {
       <PromoPopup products={promoProducts} onSelectProduct={setSelectedProduct} />
 
       {/* Hero banner */}
-      <div className="bg-gradient-to-br from-[#1a0a0a] via-[var(--bg)] to-[var(--bg)] border-b border-[var(--border)]">
+      <div className="border-b border-[var(--border)] bg-gradient-to-br from-[#1a0a0a] via-[var(--bg)] to-[var(--bg)]">
         <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold text-[var(--text)]">
@@ -129,6 +131,21 @@ export default function CatalogClient({ categories, products }: Props) {
             )}
           </div>
         </div>
+
+        {/* Banner promocional (exibido quando configurado no admin) */}
+        {bannerUrl && (
+          <div className="w-full overflow-hidden">
+            <Image
+              src={bannerUrl}
+              alt="Banner promocional"
+              width={1440}
+              height={360}
+              className="w-full max-h-56 object-cover"
+              priority
+              sizes="100vw"
+            />
+          </div>
+        )}
       </div>
 
       {/* Nav de categorias */}
