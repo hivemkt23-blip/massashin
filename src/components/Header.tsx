@@ -3,6 +3,7 @@ import { ShoppingBag, User, Clock } from 'lucide-react'
 import { useCartStore } from '@/store/cart'
 import { isRestaurantOpen } from '@/lib/delivery'
 import Link from 'next/link'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import ThemeToggle from './ThemeToggle'
 
@@ -15,8 +16,8 @@ export default function Header() {
     <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur-sm transition-colors">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-full bg-[var(--red)] flex items-center justify-center text-white font-bold text-lg leading-none select-none">
-            M
+          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+            <Image src="/logo.png" alt="Massashin" width={40} height={40} className="object-cover w-full h-full" />
           </div>
           <div>
             <span className="font-bold text-lg text-[var(--text)] tracking-wide">Massashin</span>

@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, Package, ShoppingBag, Tag, LogOut, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -26,7 +27,9 @@ export default function AdminSidebar() {
       {/* Logo */}
       <div className="px-4 py-5 border-b border-[var(--border)]">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[var(--red)] flex items-center justify-center text-white font-bold text-sm">M</div>
+          <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
+            <Image src="/logo.png" alt="Massashin" width={36} height={36} className="object-cover w-full h-full" />
+          </div>
           <div>
             <p className="font-bold text-sm text-[var(--text)]">Massashin</p>
             <p className="text-xs text-[var(--text-muted)]">Painel Admin</p>
