@@ -153,7 +153,7 @@ export default function ProductModal({ product, onClose }: Props) {
               </p>
             )}
             {product.description && (
-              <p className="text-[var(--text-muted)] text-sm mt-2 leading-relaxed">
+              <p className="text-[var(--text-muted)] text-sm mt-2 leading-relaxed whitespace-pre-line">
                 {product.description}
               </p>
             )}
