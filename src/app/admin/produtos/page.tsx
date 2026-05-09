@@ -21,7 +21,7 @@ export default function ProdutosAdmin() {
 
   const [form, setForm] = useState({
     name: '', description: '', price: '', original_price: '',
-    category_id: '', serves: '1', image_url: '', active: true,
+    category_id: '', serves: '1', image_url: '', active: true, featured: false,
   })
 
   const supabase = createClient()
@@ -39,7 +39,7 @@ export default function ProdutosAdmin() {
   useEffect(() => { load() }, [])
 
   const openCreate = () => {
-    setForm({ name: '', description: '', price: '', original_price: '', category_id: categories[0]?.id ?? '', serves: '1', image_url: '', active: true })
+    setForm({ name: '', description: '', price: '', original_price: '', category_id: categories[0]?.id ?? '', serves: '1', image_url: '', active: true, featured: false })
     setEditing(null)
     setModal('create')
   }
@@ -49,7 +49,7 @@ export default function ProdutosAdmin() {
       name: p.name, description: p.description ?? '', price: String(p.price),
       original_price: p.original_price ? String(p.original_price) : '',
       category_id: p.category_id, serves: String(p.serves),
-      image_url: p.image_url ?? '', active: p.active,
+      image_url: p.image_url ?? '', active: p.active, featured: (p as any).featured ?? false,
     })
     setEditing(p)
     setModal('edit')
@@ -78,6 +78,7 @@ export default function ProdutosAdmin() {
       serves: parseInt(form.serves),
       image_url: form.image_url || null,
       active: form.active,
+      featured: form.featured,
     }
 
     if (modal === 'edit' && editing) {
@@ -264,6 +265,10 @@ export default function ProdutosAdmin() {
               <div className="flex items-center gap-3">
                 <input type="checkbox" id="active" checked={form.active} onChange={e => setForm(p => ({ ...p, active: e.target.checked }))} className="w-4 h-4 accent-red-600" />
                 <label htmlFor="active" className="text-sm text-[var(--text)]">Produto ativo (visível no cardápio)</label>
+              </div>
+              <div className="flex items-center gap-3">
+                <input type="checkbox" id="featured" checked={form.featured} onChange={e => setForm(p => ({ ...p, featured: e.target.checked }))} className="w-4 h-4 accent-yellow-500" />
+                <label htmlFor="featured" className="text-sm text-[var(--text)]">⭐ Destaque (aparece na seção Destaques)</label>
               </div>
             </div>
 

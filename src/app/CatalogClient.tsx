@@ -6,12 +6,18 @@ import CategoryNav from '@/components/catalog/CategoryNav'
 import ProductCard from '@/components/catalog/ProductCard'
 import ProductModal from '@/components/catalog/ProductModal'
 import CartDrawer from '@/components/cart/CartDrawer'
-import { Search, X } from 'lucide-react'
+import PromoPopup from '@/components/catalog/PromoPopup'
+import ReorderSection from '@/components/catalog/ReorderSection'
+import Footer from '@/components/Footer'
+import { Search, X, Star } from 'lucide-react'
 
 interface Props {
   categories: Category[]
   products: Product[]
 }
+
+const DESTAQUES_SLUG = '__destaques__'
+const REORDER_SLUG = '__reorder__'
 
 export default function CatalogClient({ categories, products }: Props) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
@@ -19,6 +25,9 @@ export default function CatalogClient({ categories, products }: Props) {
   const [search, setSearch] = useState('')
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
   const scrolling = useRef(false)
+
+  const promoProducts = products.filter(p => p.original_price && p.original_price > p.price)
+  const featuredProducts = products.filter(p => (p as any).featured)
 
   const productsByCategory = categories.reduce<Record<string, Product[]>>((acc, cat) => {
     acc[cat.slug] = products.filter((p) => p.category_id === cat.id)
@@ -38,6 +47,13 @@ export default function CatalogClient({ categories, products }: Props) {
     : []
 
   const scrollToCategory = (slug: string) => {
+    if (slug === REORDER_SLUG || slug === DESTAQUES_SLUG) {
+      scrolling.current = true
+      setActiveCategory(slug)
+      sectionRefs.current[slug]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      setTimeout(() => { scrolling.current = false }, 800)
+      return
+    }
     scrolling.current = true
     setActiveCategory(slug)
     sectionRefs.current[slug]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -47,11 +63,11 @@ export default function CatalogClient({ categories, products }: Props) {
   const handleScroll = useCallback(() => {
     if (scrolling.current) return
     const scrollY = window.scrollY + 160
-
-    for (const cat of [...filteredCategories].reverse()) {
-      const el = sectionRefs.current[cat.slug]
+    const allSlugs = [DESTAQUES_SLUG, REORDER_SLUG, ...filteredCategories.map(c => c.slug)]
+    for (const slug of [...allSlugs].reverse()) {
+      const el = sectionRefs.current[slug]
       if (el && el.offsetTop <= scrollY) {
-        setActiveCategory(cat.slug)
+        setActiveCategory(slug)
         break
       }
     }
@@ -62,9 +78,16 @@ export default function CatalogClient({ categories, products }: Props) {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [handleScroll])
 
+  const virtualCategories = [
+    ...(featuredProducts.length > 0 ? [{ id: DESTAQUES_SLUG, name: '⭐ Destaques', slug: DESTAQUES_SLUG, display_order: -2, active: true }] : []),
+    ...filteredCategories,
+  ]
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Header />
+
+      <PromoPopup products={promoProducts} onSelectProduct={setSelectedProduct} />
 
       {/* Hero banner */}
       <div className="bg-gradient-to-br from-[#1a0a0a] via-[var(--bg)] to-[var(--bg)] border-b border-[var(--border)]">
@@ -103,14 +126,14 @@ export default function CatalogClient({ categories, products }: Props) {
       {/* Nav de categorias */}
       {!search && (
         <CategoryNav
-          categories={filteredCategories}
+          categories={virtualCategories as Category[]}
           activeSlug={activeCategory}
           onSelect={scrollToCategory}
         />
       )}
 
       {/* Conteúdo principal */}
-      <main className="max-w-6xl mx-auto px-4 py-6">
+      <main className="max-w-6xl mx-auto px-4 py-6 flex-1 w-full">
         {search.trim() ? (
           <div>
             <p className="text-sm text-[var(--text-muted)] mb-4">
@@ -131,29 +154,58 @@ export default function CatalogClient({ categories, products }: Props) {
             )}
           </div>
         ) : (
-          filteredCategories.map((cat) => {
-            const catProducts = productsByCategory[cat.slug] ?? []
-            if (!catProducts.length) return null
-            return (
+          <>
+            {/* Seção Destaques */}
+            {featuredProducts.length > 0 && (
               <section
-                key={cat.slug}
-                ref={(el) => { sectionRefs.current[cat.slug] = el }}
+                ref={(el) => { sectionRefs.current[DESTAQUES_SLUG] = el }}
                 className="mb-10 scroll-mt-32"
               >
                 <h2 className="text-lg font-bold text-[var(--text)] mb-4 pb-2 border-b border-[var(--border)] flex items-center gap-2">
-                  <span className="w-1 h-5 bg-[var(--red)] rounded-full" />
-                  {cat.name}
+                  <span className="w-1 h-5 bg-yellow-500 rounded-full" />
+                  <Star size={16} className="text-yellow-500" />
+                  Destaques
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {catProducts.map((p) => (
+                  {featuredProducts.map((p) => (
                     <ProductCard key={p.id} product={p} onClick={setSelectedProduct} />
                   ))}
                 </div>
               </section>
-            )
-          })
+            )}
+
+            {/* Seção Pedir Novamente */}
+            <div ref={(el) => { sectionRefs.current[REORDER_SLUG] = el }} className="scroll-mt-32">
+              <ReorderSection products={products} onSelectProduct={setSelectedProduct} />
+            </div>
+
+            {/* Categorias normais */}
+            {filteredCategories.map((cat) => {
+              const catProducts = productsByCategory[cat.slug] ?? []
+              if (!catProducts.length) return null
+              return (
+                <section
+                  key={cat.slug}
+                  ref={(el) => { sectionRefs.current[cat.slug] = el }}
+                  className="mb-10 scroll-mt-32"
+                >
+                  <h2 className="text-lg font-bold text-[var(--text)] mb-4 pb-2 border-b border-[var(--border)] flex items-center gap-2">
+                    <span className="w-1 h-5 bg-[var(--red)] rounded-full" />
+                    {cat.name}
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {catProducts.map((p) => (
+                      <ProductCard key={p.id} product={p} onClick={setSelectedProduct} />
+                    ))}
+                  </div>
+                </section>
+              )
+            })}
+          </>
         )}
       </main>
+
+      <Footer />
 
       {/* Modal de produto */}
       <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
