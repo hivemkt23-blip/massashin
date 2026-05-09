@@ -9,7 +9,9 @@ import CartDrawer from '@/components/cart/CartDrawer'
 import PromoPopup from '@/components/catalog/PromoPopup'
 import ReorderSection from '@/components/catalog/ReorderSection'
 import Footer from '@/components/Footer'
-import { Search, X, Star } from 'lucide-react'
+import { Search, X, Star, MessageSquare } from 'lucide-react'
+import ReviewForm from '@/components/catalog/ReviewForm'
+import ReviewsList from '@/components/catalog/ReviewsList'
 
 interface Props {
   categories: Category[]
@@ -18,11 +20,13 @@ interface Props {
 
 const DESTAQUES_SLUG = '__destaques__'
 const REORDER_SLUG = '__reorder__'
+const AVALIACOES_SLUG = '__avaliacoes__'
 
 export default function CatalogClient({ categories, products }: Props) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [activeCategory, setActiveCategory] = useState(categories[0]?.slug ?? '')
   const [search, setSearch] = useState('')
+  const [reviewRefreshKey, setReviewRefreshKey] = useState(0)
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
   const scrolling = useRef(false)
 
@@ -81,6 +85,7 @@ export default function CatalogClient({ categories, products }: Props) {
   const virtualCategories = [
     ...(featuredProducts.length > 0 ? [{ id: DESTAQUES_SLUG, name: '⭐ Destaques', slug: DESTAQUES_SLUG, display_order: -2, active: true }] : []),
     ...filteredCategories,
+    { id: AVALIACOES_SLUG, name: '⭐ Avaliações', slug: AVALIACOES_SLUG, display_order: 999, active: true },
   ]
 
   return (
@@ -97,7 +102,10 @@ export default function CatalogClient({ categories, products }: Props) {
               🍣 <span style={{ color: 'var(--red)' }}>Massashin</span>
             </h1>
             <p className="text-[var(--text-muted)] mt-1 text-sm">
-              Shopping Avenida Center · Dourados, MS · Entrega a partir de R$ 8,00
+              Av. Marcelino Pires, 3600 · Shopping Avenida Center
+            </p>
+            <p className="text-[var(--text-muted)] text-sm">
+              Dourados, MS · Entrega a partir de R$ 8,00
             </p>
           </div>
 
@@ -201,6 +209,22 @@ export default function CatalogClient({ categories, products }: Props) {
                 </section>
               )
             })}
+
+            {/* Seção Avaliações */}
+            <section
+              ref={(el) => { sectionRefs.current[AVALIACOES_SLUG] = el }}
+              className="mb-10 scroll-mt-32"
+            >
+              <h2 className="text-lg font-bold text-[var(--text)] mb-4 pb-2 border-b border-[var(--border)] flex items-center gap-2">
+                <span className="w-1 h-5 bg-yellow-500 rounded-full" />
+                <MessageSquare size={16} className="text-yellow-500" />
+                Avaliações
+              </h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ReviewForm onSubmitted={() => setReviewRefreshKey(k => k + 1)} />
+                <ReviewsList refreshKey={reviewRefreshKey} />
+              </div>
+            </section>
           </>
         )}
       </main>

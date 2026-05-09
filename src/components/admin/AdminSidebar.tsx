@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Package, ShoppingBag, Tag, LogOut, ExternalLink } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingBag, Tag, LogOut, ExternalLink, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import ThemeToggle from '@/components/ThemeToggle'
 
@@ -11,6 +11,7 @@ const NAV = [
   { href: '/admin/pedidos', label: 'Pedidos', icon: ShoppingBag },
   { href: '/admin/produtos', label: 'Produtos', icon: Package },
   { href: '/admin/categorias', label: 'Categorias', icon: Tag },
+  { href: '/admin/avaliacoes', label: 'Avaliações', icon: MessageSquare },
 ]
 
 export default function AdminSidebar() {

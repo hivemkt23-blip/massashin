@@ -149,8 +149,21 @@ export const RESTAURANT_COORDS = {
   lat: -22.2194,
   lng: -54.8058,
   name: 'Massashin',
-  address: 'Shopping Avenida Center, Dourados - MS',
+  address: 'Av. Marcelino Pires, 3600 · Shopping Avenida Center · Dourados, MS',
   whatsapp: '5567992350880',
+}
+
+export type ReviewStatus = 'pending' | 'approved' | 'rejected'
+
+export interface Review {
+  id: string
+  user_id: string | null
+  user_name: string
+  rating: number
+  comment: string | null
+  status: ReviewStatus
+  admin_reply: string | null
+  created_at: string
 }
 
 export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
