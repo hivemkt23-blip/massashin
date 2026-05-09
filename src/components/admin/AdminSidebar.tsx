@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Package, ShoppingBag, Tag, LogOut, ExternalLink, MessageSquare, Settings } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingBag, Tag, LogOut, ExternalLink, MessageSquare, Settings, DollarSign } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import ThemeToggle from '@/components/ThemeToggle'
 
@@ -12,6 +12,7 @@ const NAV = [
   { href: '/admin/produtos', label: 'Produtos', icon: Package },
   { href: '/admin/categorias', label: 'Categorias', icon: Tag },
   { href: '/admin/avaliacoes', label: 'Avaliações', icon: MessageSquare },
+  { href: '/admin/fluxo-de-caixa', label: 'Fluxo de Caixa', icon: DollarSign },
   { href: '/admin/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
