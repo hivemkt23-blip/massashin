@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Order, ORDER_STATUS_LABELS, PAYMENT_LABELS } from '@/types'
 import { formatCurrency } from '@/lib/utils'
-import { Clock, ChevronDown, Search } from 'lucide-react'
+import { Clock, ChevronDown, Search, Printer } from 'lucide-react'
+import { printOrder } from '@/lib/print'
 
 const STATUS_OPTIONS = ['pending', 'confirmed', 'preparing', 'delivering', 'delivered', 'cancelled']
 const STATUS_COLORS: Record<string, string> = {
@@ -112,6 +113,15 @@ export default function PedidosAdmin() {
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-[var(--red)] text-sm">{formatCurrency(order.total)}</span>
 
+                  {/* Imprimir */}
+                  <button
+                    onClick={e => { e.stopPropagation(); printOrder(order) }}
+                    title="Imprimir pedido"
+                    className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg-elevated)] transition-colors flex-shrink-0"
+                  >
+                    <Printer size={15} />
+                  </button>
+
                   {/* Seletor de status */}
                   <select
                     value={order.status}
@@ -185,6 +195,14 @@ export default function PedidosAdmin() {
                       <span className="text-[var(--text-muted)]">{order.customer_notes}</span>
                     </div>
                   )}
+
+                  <button
+                    onClick={() => printOrder(order)}
+                    className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg text-sm text-[var(--text)] hover:border-[var(--red)] hover:text-[var(--red)] transition-colors w-full justify-center"
+                  >
+                    <Printer size={15} />
+                    Imprimir comprovante (80mm)
+                  </button>
                 </div>
               )}
             </div>
