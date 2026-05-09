@@ -150,7 +150,7 @@ export const RESTAURANT_COORDS = {
   lng: -54.8058,
   name: 'Massashin',
   address: 'Shopping Avenida Center, Dourados - MS',
-  whatsapp: '5567998830420',
+  whatsapp: '5567992350880',
 }
 
 export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
