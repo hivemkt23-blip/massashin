@@ -1,11 +1,9 @@
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Lock, Eye, EyeOff } from 'lucide-react'
 import Button from '@/components/ui/Button'
 
 export default function AdminLoginPage() {
-  const router = useRouter()
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState('')
@@ -23,8 +21,7 @@ export default function AdminLoginPage() {
     })
 
     if (res.ok) {
-      router.push('/admin')
-      router.refresh()
+      window.location.href = '/admin'
     } else {
       setError('Senha incorreta.')
     }
