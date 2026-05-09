@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import { Mail, Lock, User, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 type Mode = 'login' | 'signup'
 
@@ -57,8 +58,8 @@ export default function AuthPage() {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-full bg-[var(--red)] flex items-center justify-center text-white font-bold text-2xl mx-auto mb-3">
-            M
+          <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-3 bg-[var(--bg-elevated)]">
+            <Image src="/logo.png" alt="Massashin" width={80} height={80} className="object-cover w-full h-full" />
           </div>
           <h1 className="text-2xl font-bold text-[var(--text)]">Massashin</h1>
           <p className="text-[var(--text-muted)] text-sm mt-1">
