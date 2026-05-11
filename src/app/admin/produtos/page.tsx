@@ -84,10 +84,19 @@ export default function ProdutosAdmin() {
       featured: form.featured,
     }
 
+    let erro: string | null = null
     if (modal === 'edit' && editing) {
-      await supabase.from('products').update(payload).eq('id', editing.id)
+      const { error } = await supabase.from('products').update(payload).eq('id', editing.id)
+      if (error) erro = error.message
     } else {
-      await supabase.from('products').insert(payload)
+      const { error } = await supabase.from('products').insert(payload)
+      if (error) erro = error.message
+    }
+
+    if (erro) {
+      alert(`Erro ao salvar: ${erro}`)
+      setSaving(false)
+      return
     }
 
     await load()

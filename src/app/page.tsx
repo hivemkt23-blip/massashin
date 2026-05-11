@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Category, Product } from '@/types'
 import CatalogClient from './CatalogClient'
 
-export const revalidate = 3600
+export const revalidate = 0
 
 export default async function HomePage() {
   const supabase = await createClient()
