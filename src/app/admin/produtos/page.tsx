@@ -124,20 +124,15 @@ export default function ProdutosAdmin() {
 
   const handleConvertAll = async () => {
     setConverting(true)
-    let success = 0
-    for (const p of convertPreview) {
-      const { error } = await supabase
-        .from('products')
-        .update({ description: p.after })
-        .eq('id', p.id)
-      if (!error) success++
+    const { data, error } = await supabase.rpc('admin_convert_descriptions')
+    if (error) {
+      alert(`Erro ao converter: ${error.message}`)
+    } else {
+      alert(`✅ ${data} produto(s) atualizados com sucesso!`)
     }
     await load()
     setConverting(false)
     setConvertModal(false)
-    if (success < convertPreview.length) {
-      alert(`Atenção: ${success} de ${convertPreview.length} produtos foram atualizados. Tente novamente para os restantes.`)
-    }
   }
 
   return (
