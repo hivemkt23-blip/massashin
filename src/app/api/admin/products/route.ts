@@ -13,7 +13,7 @@ function adminSupabase() {
 
 async function isAdmin() {
   const cookieStore = await cookies()
-  return cookieStore.get('admin_token')?.value === 'authenticated'
+  return cookieStore.get('admin_session')?.value === 'authenticated'
 }
 
 export async function PUT(req: NextRequest) {
