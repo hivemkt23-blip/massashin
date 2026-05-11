@@ -14,11 +14,22 @@ export async function POST(req: NextRequest) {
     const { address, order, items } = await req.json()
     const supabase = serviceSupabase()
 
+    // Verifica se user_id tem perfil cadastrado (evita erro de FK)
+    let validUserId: string | null = order.user_id || null
+    if (validUserId) {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('id', validUserId)
+        .single()
+      if (!profile) validUserId = null // perfil não existe, trata como guest
+    }
+
     // Salva endereço
     const { data: savedAddr, error: addrError } = await supabase
       .from('addresses')
       .insert({
-        user_id: order.user_id || null,
+        user_id: validUserId,
         label: 'Entrega',
         street: address.street,
         number: address.number,
@@ -32,14 +43,14 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (addrError) {
-      return NextResponse.json({ error: addrError.message }, { status: 500 })
+      return NextResponse.json({ error: `address: ${addrError.message}` }, { status: 500 })
     }
 
     // Salva pedido
     const { data: savedOrder, error: orderError } = await supabase
       .from('orders')
       .insert({
-        user_id: order.user_id || null,
+        user_id: validUserId,
         address_id: savedAddr.id,
         status: 'pending',
         payment_method: order.payment_method,
@@ -53,7 +64,7 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (orderError) {
-      return NextResponse.json({ error: orderError.message }, { status: 500 })
+      return NextResponse.json({ error: `order: ${orderError.message}` }, { status: 500 })
     }
 
     // Salva itens
