@@ -86,11 +86,19 @@ export default function ProdutosAdmin() {
 
     let erro: string | null = null
     if (modal === 'edit' && editing) {
-      const { error } = await supabase.from('products').update(payload).eq('id', editing.id)
-      if (error) erro = error.message
+      const res = await fetch('/api/admin/products', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editing.id, ...payload }),
+      })
+      if (!res.ok) { const d = await res.json(); erro = d.error }
     } else {
-      const { error } = await supabase.from('products').insert(payload)
-      if (error) erro = error.message
+      const res = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) { const d = await res.json(); erro = d.error }
     }
 
     if (erro) {
@@ -106,7 +114,11 @@ export default function ProdutosAdmin() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Excluir este produto?')) return
-    await supabase.from('products').delete().eq('id', id)
+    await fetch('/api/admin/products', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
     await load()
   }
 
@@ -133,15 +145,21 @@ export default function ProdutosAdmin() {
 
   const handleConvertAll = async () => {
     setConverting(true)
-    const { data, error } = await supabase.rpc('admin_convert_descriptions')
-    if (error) {
-      alert(`Erro ao converter: ${error.message}`)
-    } else {
-      alert(`✅ ${data} produto(s) atualizados com sucesso!`)
+    let success = 0
+    for (const p of convertPreview) {
+      const res = await fetch('/api/admin/products', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: p.id, description: p.after }),
+      })
+      if (res.ok) success++
     }
     await load()
     setConverting(false)
     setConvertModal(false)
+    if (success < convertPreview.length) {
+      alert(`Atenção: ${success} de ${convertPreview.length} produtos atualizados.`)
+    }
   }
 
   return (
