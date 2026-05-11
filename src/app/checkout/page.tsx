@@ -90,8 +90,6 @@ export default function CheckoutPage() {
     if (!deliveryInfo) return
     setSubmitting(true)
 
-    const supabase = createClient()
-
     try {
       const fullAddress: Address = {
         id: '',
@@ -109,82 +107,50 @@ export default function CheckoutPage() {
         is_default: false,
       }
 
-      let savedAddressId: string | null = null
-
-      if (user) {
-        // Salva endereço no perfil do usuário
-        const { data: addr } = await supabase
-          .from('addresses')
-          .insert({ ...fullAddress, user_id: user.id })
-          .select('id')
-          .single()
-        savedAddressId = addr?.id ?? null
-
-        // Cria o pedido no banco
-        const { data: order, error } = await supabase
-          .from('orders')
-          .insert({
-            user_id: user.id,
-            address_id: savedAddressId,
-            status: 'pending',
+      // Salva pedido via API route (service role — funciona com ou sem login)
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: {
+            user_id: user?.id ?? null,
+            street: address.street,
+            number: address.number,
+            complement: address.complement,
+            neighborhood: address.neighborhood,
+            city: 'Dourados',
+            state: 'MS',
+            zip_code: address.zip_code,
+          },
+          order: {
+            user_id: user?.id ?? null,
             payment_method: paymentMethod,
             subtotal: sub,
             delivery_fee: deliveryInfo.zone.delivery_fee,
             total: sub + deliveryInfo.zone.delivery_fee,
             delivery_time_min: deliveryInfo.zone.delivery_time_min,
             customer_notes: generalNotes || null,
-          })
-          .select('id, order_number')
-          .single()
+          },
+          items: items.map(item => ({
+            product_id: item.product.id,
+            product_name: item.product.name,
+            product_price: item.unit_price,
+            quantity: item.quantity,
+            item_notes: item.item_notes || null,
+            subtotal: item.unit_price * item.quantity,
+            options: item.selected_options.map(opt => ({
+              group_name: opt.group_name,
+              item_name: opt.item_name,
+              price_add: opt.price_add,
+            })),
+          })),
+        }),
+      })
 
-        if (!error && order) {
-          // Insere itens do pedido
-          for (const item of items) {
-            const { data: orderItem } = await supabase
-              .from('order_items')
-              .insert({
-                order_id: order.id,
-                product_id: item.product.id,
-                product_name: item.product.name,
-                product_price: item.unit_price,
-                quantity: item.quantity,
-                item_notes: item.item_notes || null,
-                subtotal: item.unit_price * item.quantity,
-              })
-              .select('id')
-              .single()
+      const data = await res.json()
+      const orderNumber = data.order_number ?? Math.floor(Math.random() * 90000) + 10000
 
-            if (orderItem && item.selected_options.length > 0) {
-              await supabase.from('order_item_options').insert(
-                item.selected_options.map((opt) => ({
-                  order_item_id: orderItem.id,
-                  option_group_name: opt.group_name,
-                  option_item_name: opt.item_name,
-                  price_add: opt.price_add,
-                }))
-              )
-            }
-          }
-
-          // Abre WhatsApp
-          const msg = formatOrderMessage(
-            order.order_number,
-            items,
-            fullAddress,
-            paymentMethod,
-            deliveryInfo.zone.delivery_fee,
-            generalNotes
-          )
-          const waUrl = buildWhatsAppUrl(msg)
-          clearCart()
-          window.open(waUrl, '_blank')
-          router.push('/pedidos')
-          return
-        }
-      }
-
-      // Usuário não logado: apenas abre WhatsApp com número de pedido temporário
-      const orderNumber = Math.floor(Math.random() * 90000) + 10000
+      // Abre WhatsApp
       const msg = formatOrderMessage(
         orderNumber,
         items,
@@ -196,7 +162,7 @@ export default function CheckoutPage() {
       const waUrl = buildWhatsAppUrl(msg)
       clearCart()
       window.open(waUrl, '_blank')
-      router.push('/')
+      router.push(user ? '/pedidos' : '/')
     } finally {
       setSubmitting(false)
     }
