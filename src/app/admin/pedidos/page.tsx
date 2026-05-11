@@ -108,6 +108,11 @@ export default function PedidosAdmin() {
                   {order.addresses?.neighborhood && (
                     <span className="text-xs text-[var(--text-muted)]">📍 {order.addresses.neighborhood}</span>
                   )}
+                  {order.customer_notes && (
+                    <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      ⚠️ Obs
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -190,9 +195,12 @@ export default function PedidosAdmin() {
                   </div>
 
                   {order.customer_notes && (
-                    <div className="p-3 rounded-lg bg-[var(--bg-elevated)] text-sm">
-                      <span className="font-medium text-[var(--text)]">Obs: </span>
-                      <span className="text-[var(--text-muted)]">{order.customer_notes}</span>
+                    <div className="p-3 rounded-lg border border-amber-500/40 bg-amber-500/10 text-sm flex gap-2">
+                      <span className="text-lg leading-none">⚠️</span>
+                      <div>
+                        <p className="font-bold text-amber-400 text-xs uppercase tracking-wide mb-0.5">Observação do cliente</p>
+                        <p className="text-amber-200">{order.customer_notes}</p>
+                      </div>
                     </div>
                   )}
 
