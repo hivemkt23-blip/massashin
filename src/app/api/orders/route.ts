@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
         total: order.total,
         delivery_time_min: order.delivery_time_min,
         customer_notes: order.customer_notes || null,
+        customer_phone: order.customer_phone || null,
       })
       .select('id, order_number')
       .single()

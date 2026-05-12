@@ -25,6 +25,7 @@ export default function CheckoutPage() {
   const [outOfRange, setOutOfRange] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pix')
   const [generalNotes, setGeneralNotes] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [geocoding, setGeocoding] = useState(false)
@@ -130,6 +131,7 @@ export default function CheckoutPage() {
             total: sub + deliveryInfo.zone.delivery_fee,
             delivery_time_min: deliveryInfo.zone.delivery_time_min,
             customer_notes: generalNotes || null,
+            customer_phone: customerPhone || null,
           },
           items: items.map(item => ({
             product_id: item.product.id,
@@ -309,6 +311,17 @@ export default function CheckoutPage() {
               rows={2}
               className="w-full bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg px-3 py-2.5 text-sm text-[var(--text)] placeholder-[var(--text-muted)] resize-none focus:outline-none focus:border-[var(--red)] transition-colors"
             />
+            <div className="mt-3">
+              <label className="block text-xs text-[var(--text-muted)] mb-1">WhatsApp para atualizações <span className="opacity-60">(opcional)</span></label>
+              <input
+                type="tel"
+                value={customerPhone}
+                onChange={e => setCustomerPhone(e.target.value)}
+                placeholder="(67) 99999-9999"
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--red)] transition-colors"
+              />
+              <p className="text-xs text-[var(--text-muted)] mt-1">Vamos te notificar quando seu pedido estiver a caminho 🛵</p>
+            </div>
           </section>
 
           {/* RESUMO */}

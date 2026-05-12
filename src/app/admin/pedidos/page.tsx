@@ -1,9 +1,9 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Order, ORDER_STATUS_LABELS, PAYMENT_LABELS } from '@/types'
+import { ORDER_STATUS_LABELS, PAYMENT_LABELS } from '@/types'
 import { formatCurrency } from '@/lib/utils'
-import { Clock, ChevronDown, Search, Printer } from 'lucide-react'
+import { Clock, ChevronDown, Search, Printer, MessageCircle } from 'lucide-react'
 import { printOrder } from '@/lib/print'
 
 const STATUS_OPTIONS = ['pending', 'confirmed', 'preparing', 'delivering', 'delivered', 'cancelled']
@@ -16,28 +16,97 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled:  'bg-red-900/30 text-red-400 border-red-800',
 }
 
+const STATUS_WA_MSG: Record<string, string> = {
+  confirmed:  '✅ Olá! Seu pedido foi *confirmado* e já está sendo preparado. Em breve chegará até você! 🍱',
+  preparing:  '👨‍🍳 Seu pedido está *em preparo*! Nossa equipe está caprichando no seu pedido.',
+  delivering: '🛵 Seu pedido *saiu para entrega*! Em breve chegará até você. Fique de olho!',
+  delivered:  '🎉 Seu pedido foi *entregue*! Esperamos que aproveite muito. Obrigado pela preferência! 🙏',
+  cancelled:  '❌ Infelizmente seu pedido foi *cancelado*. Entre em contato conosco para mais informações.',
+}
+
+// Gera beep via Web Audio API
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const sequence = [880, 1100, 880]
+    let time = ctx.currentTime
+    sequence.forEach((freq, i) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.frequency.value = freq
+      osc.type = 'sine'
+      gain.gain.setValueAtTime(0.4, time)
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.25)
+      osc.start(time)
+      osc.stop(time + 0.25)
+      time += 0.28
+    })
+  } catch {}
+}
+
 export default function PedidosAdmin() {
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [newOrderAlert, setNewOrderAlert] = useState(false)
+  const knownIds = useRef<Set<string>>(new Set())
   const supabase = createClient()
 
   const load = async () => {
     const { data } = await supabase
       .from('orders')
-      .select(`*, addresses(*), order_items(*, order_item_options(*))`)
+      .select(`*, addresses(*), order_items(*, order_item_options(*)), user_profiles(full_name, phone)`)
       .order('created_at', { ascending: false })
     setOrders(data ?? [])
     setLoading(false)
+    return data ?? []
   }
 
-  useEffect(() => { load() }, [])
+  // Carrega inicial e guarda IDs conhecidos
+  useEffect(() => {
+    load().then(data => {
+      data.forEach((o: any) => knownIds.current.add(o.id))
+    })
+  }, [])
+
+  // Realtime: escuta novos pedidos
+  useEffect(() => {
+    const channel = supabase
+      .channel('new-orders')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
+        const newOrder = payload.new as any
+        if (!knownIds.current.has(newOrder.id)) {
+          knownIds.current.add(newOrder.id)
+          playBeep()
+          setNewOrderAlert(true)
+          load() // recarrega lista
+        }
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [])
 
   const updateStatus = async (orderId: string, status: string) => {
     await supabase.from('orders').update({ status }).eq('id', orderId)
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o))
+  }
+
+  const sendWhatsApp = (order: any, status: string) => {
+    const phone = order.customer_phone || order.user_profiles?.phone
+    if (!phone) {
+      alert('Telefone do cliente não cadastrado.')
+      return
+    }
+    const numero = phone.replace(/\D/g, '')
+    const msg = STATUS_WA_MSG[status]
+    if (!msg) return
+    const msgCompleta = `${msg}\n\n*Pedido #${order.order_number}* — ${formatCurrency(order.total)}`
+    window.open(`https://wa.me/55${numero}?text=${encodeURIComponent(msgCompleta)}`, '_blank')
   }
 
   const filtered = orders.filter(o => {
@@ -56,8 +125,19 @@ export default function PedidosAdmin() {
           <h1 className="text-2xl font-bold text-[var(--text)]">Pedidos</h1>
           <p className="text-sm text-[var(--text-muted)]">{orders.length} pedidos no total</p>
         </div>
-        <button onClick={load} className="text-sm text-[var(--red)] hover:underline">↻ Atualizar</button>
+        <button onClick={() => { load(); setNewOrderAlert(false) }} className="text-sm text-[var(--red)] hover:underline">↻ Atualizar</button>
       </div>
+
+      {/* Alerta novo pedido */}
+      {newOrderAlert && (
+        <div
+          className="mb-4 p-3 rounded-xl bg-green-500/20 border border-green-500/40 text-green-400 font-semibold text-sm flex items-center justify-between cursor-pointer animate-pulse"
+          onClick={() => setNewOrderAlert(false)}
+        >
+          <span>🔔 Novo pedido chegou!</span>
+          <span className="text-xs opacity-70">clique para dispensar</span>
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="flex gap-3 mb-5">
@@ -94,12 +174,12 @@ export default function PedidosAdmin() {
           )}
           {filtered.map(order => (
             <div key={order.id} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden">
-              {/* Header do pedido */}
+              {/* Header */}
               <div
                 className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[var(--bg-elevated)] transition-colors"
                 onClick={() => setExpanded(expanded === order.id ? null : order.id)}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 flex-wrap">
                   <span className="font-mono text-sm font-bold text-[var(--text)]">#{order.order_number}</span>
                   <div className="text-xs text-[var(--text-muted)] flex items-center gap-1">
                     <Clock size={11} />
@@ -118,7 +198,6 @@ export default function PedidosAdmin() {
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-[var(--red)] text-sm">{formatCurrency(order.total)}</span>
 
-                  {/* Imprimir */}
                   <button
                     onClick={e => { e.stopPropagation(); printOrder(order) }}
                     title="Imprimir pedido"
@@ -130,7 +209,22 @@ export default function PedidosAdmin() {
                   {/* Seletor de status */}
                   <select
                     value={order.status}
-                    onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value) }}
+                    onChange={e => {
+                      e.stopPropagation()
+                      const newStatus = e.target.value
+                      updateStatus(order.id, newStatus)
+                      // Pergunta se quer notificar cliente
+                      if (STATUS_WA_MSG[newStatus]) {
+                        const phone = order.customer_phone || order.user_profiles?.phone
+                        if (phone) {
+                          setTimeout(() => {
+                            if (confirm(`Notificar cliente via WhatsApp sobre "${(ORDER_STATUS_LABELS as Record<string,string>)[newStatus]}"?`)) {
+                              sendWhatsApp({ ...order, status: newStatus }, newStatus)
+                            }
+                          }, 100)
+                        }
+                      }
+                    }}
                     onClick={e => e.stopPropagation()}
                     className={`text-xs px-2 py-1 rounded-full border font-medium bg-transparent cursor-pointer focus:outline-none ${STATUS_COLORS[order.status]}`}
                   >
@@ -171,7 +265,6 @@ export default function PedidosAdmin() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    {/* Endereço */}
                     {order.addresses && (
                       <div>
                         <p className="text-xs font-semibold text-[var(--text-muted)] mb-1 uppercase tracking-wide">Endereço</p>
@@ -182,7 +275,6 @@ export default function PedidosAdmin() {
                       </div>
                     )}
 
-                    {/* Pagamento */}
                     <div>
                       <p className="text-xs font-semibold text-[var(--text-muted)] mb-1 uppercase tracking-wide">Pagamento</p>
                       <p className="text-[var(--text)]">{(PAYMENT_LABELS as Record<string, string>)[order.payment_method]}</p>
@@ -204,13 +296,27 @@ export default function PedidosAdmin() {
                     </div>
                   )}
 
-                  <button
-                    onClick={() => printOrder(order)}
-                    className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg text-sm text-[var(--text)] hover:border-[var(--red)] hover:text-[var(--red)] transition-colors w-full justify-center"
-                  >
-                    <Printer size={15} />
-                    Imprimir comprovante (80mm)
-                  </button>
+                  {/* Botões de ação */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => printOrder(order)}
+                      className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg text-sm text-[var(--text)] hover:border-[var(--red)] hover:text-[var(--red)] transition-colors flex-1 justify-center"
+                    >
+                      <Printer size={15} />
+                      Imprimir (80mm)
+                    </button>
+
+                    {/* WhatsApp manual */}
+                    {STATUS_WA_MSG[order.status] && (
+                      <button
+                        onClick={() => sendWhatsApp(order, order.status)}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-lg text-sm text-green-400 hover:bg-green-500/20 transition-colors flex-1 justify-center"
+                      >
+                        <MessageCircle size={15} />
+                        Notificar cliente
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
