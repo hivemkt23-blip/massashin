@@ -63,7 +63,15 @@ export default function ConfiguracoesAdmin() {
 
   const handleSavePhones = async () => {
     setSavingPhones(true)
-    await supabase.from('site_settings').upsert({ key: 'notification_phones', value: JSON.stringify(phones) })
+    // Se tiver número digitado no campo, adiciona antes de salvar
+    let finalPhones = [...phones]
+    const clean = newPhone.replace(/\D/g, '')
+    if (clean.length >= 10 && !finalPhones.includes(clean)) {
+      finalPhones = [...finalPhones, clean]
+      setPhones(finalPhones)
+      setNewPhone('')
+    }
+    await supabase.from('site_settings').upsert({ key: 'notification_phones', value: JSON.stringify(finalPhones) })
     setSavingPhones(false)
     setSavedPhones(true)
     setTimeout(() => setSavedPhones(false), 3000)
