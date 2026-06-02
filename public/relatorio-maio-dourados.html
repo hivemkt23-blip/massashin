@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório Maio 2026 — Massashin Dourados</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #ea1d2c 0%, #c0000d 100%);
+    color: white;
+    padding: 32px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(234,29,44,0.4);
+  }
+  .header-left h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+  .header-left p { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+  .header-badge {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 24px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+  }
+
+  /* LAYOUT */
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #ea1d2c;
+    margin: 32px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, #ea1d2c33, transparent);
+  }
+
+  /* GRID */
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+
+  /* CARD */
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 22px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1px solid #f0f0f0;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.1); }
+
+  /* KPI CARD */
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #8a8a9a;
+    margin-bottom: 8px;
+  }
+  .kpi-value {
+    font-size: 30px;
+    font-weight: 800;
+    color: #1a1a2e;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  .kpi-value.big { font-size: 36px; }
+  .kpi-sub {
+    font-size: 12px;
+    color: #8a8a9a;
+    margin-top: 4px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 8px;
+  }
+  .badge.up { background: #e8f8f0; color: #1a8a4a; }
+  .badge.down { background: #fff0f1; color: #cc1a24; }
+  .badge.neutral { background: #f0f0f8; color: #5a5a7a; }
+
+  /* CARD ACCENT */
+  .card.accent-red { border-left: 4px solid #ea1d2c; }
+  .card.accent-green { border-left: 4px solid #1a8a4a; }
+  .card.accent-orange { border-left: 4px solid #f59e0b; }
+  .card.accent-blue { border-left: 4px solid #3b82f6; }
+
+  /* COMPARATIVO TABLE */
+  .comp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .comp-table th {
+    background: #f8f9fa;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #8a8a9a;
+    border-bottom: 2px solid #f0f0f0;
+  }
+  .comp-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #f5f5f5;
+    vertical-align: middle;
+  }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table tr.highlight { background: #fff8f8; }
+  .comp-table tr.highlight td:first-child { font-weight: 700; color: #ea1d2c; }
+  .month-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+
+  /* ITEM RANK */
+  .item-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  .item-row:last-child { border-bottom: none; }
+  .rank-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .rank-1 { background: #fff0b3; color: #856404; }
+  .rank-2 { background: #f0f0f0; color: #555; }
+  .rank-3 { background: #ffe8d6; color: #7c3d00; }
+  .rank-other { background: #f5f5f5; color: #999; }
+  .item-name { font-size: 13px; font-weight: 600; color: #1a1a2e; flex: 1; }
+  .item-cat { font-size: 11px; color: #aaa; font-weight: 400; display: block; }
+  .item-stats { text-align: right; }
+  .item-stats .vendas { font-size: 16px; font-weight: 800; color: #1a1a2e; }
+  .item-stats .valor { font-size: 12px; color: #8a8a9a; }
+
+  /* DANGER ITEM */
+  .item-row.danger .item-name { color: #cc1a24; }
+  .item-row.danger .rank-other { background: #fff0f1; color: #cc1a24; }
+
+  /* BAR CHART */
+  .bar-group { display: flex; flex-direction: column; gap: 8px; }
+  .bar-item { display: flex; align-items: center; gap: 10px; }
+  .bar-label { width: 80px; font-size: 12px; color: #555; text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; background: #f0f0f5; border-radius: 4px; height: 20px; overflow: hidden; }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #ea1d2c, #ff5a65);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    transition: width 1s ease;
+    min-width: 28px;
+  }
+  .bar-fill.green { background: linear-gradient(90deg, #1a8a4a, #2ecc71); }
+  .bar-fill.blue { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+
+  /* PAYMENT PIE */
+  .pay-list { display: flex; flex-direction: column; gap: 8px; }
+  .pay-item { display: flex; align-items: center; gap: 10px; }
+  .pay-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .pay-name { font-size: 13px; color: #333; flex: 1; }
+  .pay-val { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+  .pay-pct { font-size: 11px; color: #aaa; width: 36px; text-align: right; }
+
+  /* STATUS ROW */
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+    font-size: 13px;
+  }
+  .status-row:last-child { border-bottom: none; }
+  .status-label { color: #555; }
+  .status-value { font-weight: 700; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .chip.ok { background: #e8f8f0; color: #1a7a3a; }
+  .chip.warn { background: #fff8e6; color: #b07d00; }
+  .chip.bad { background: #fff0f1; color: #cc1a24; }
+
+  /* ALERT BOX */
+  .alert-box {
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .alert-box.red { background: #fff0f1; border-left: 4px solid #ea1d2c; }
+  .alert-box.orange { background: #fffbf0; border-left: 4px solid #f59e0b; }
+  .alert-box.green { background: #f0faf4; border-left: 4px solid #22c55e; }
+  .alert-icon { font-size: 16px; margin-top: 1px; }
+  .alert-text strong { display: block; font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .alert-text span { color: #666; }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    color: #aaa;
+    font-size: 12px;
+    margin-top: 16px;
+  }
+
+  /* HIGHLIGHT NUMERO */
+  .number-highlight { color: #ea1d2c; font-weight: 800; }
+  .number-good { color: #1a8a4a; font-weight: 800; }
+
+  @media (max-width: 900px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .grid-2-1 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>🍱 Massashin Dourados · Relatório Mensal</h1>
+    <p>Período: 01/05/2026 — 31/05/2026 · App e Site iFood · ID 1071241</p>
+  </div>
+  <div class="header-badge">📅 Maio 2026</div>
+</div>
+
+<div class="container">
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SEÇÃO 1 — KPIs PRINCIPAIS              -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section-title">💰 Vendas — Visão Geral do Mês</div>
+  <div class="grid-4">
+
+    <div class="card accent-red">
+      <div class="kpi-label">Total de Pedidos</div>
+      <div class="kpi-value big">1.021</div>
+      <div class="kpi-sub">vs. 1.001 em Abril</div>
+      <span class="badge up">▲ +2%</span>
+    </div>
+
+    <div class="card accent-red">
+      <div class="kpi-label">Faturamento</div>
+      <div class="kpi-value">R$99.633</div>
+      <div class="kpi-sub">vs. R$101.508 em Abril</div>
+      <span class="badge down">▼ -1,86%</span>
+    </div>
+
+    <div class="card accent-orange">
+      <div class="kpi-label">Ticket Médio</div>
+      <div class="kpi-value">R$97,58</div>
+      <div class="kpi-sub">vs. R$101,41 em Abril</div>
+      <span class="badge down">▼ -3,78%</span>
+    </div>
+
+    <div class="card accent-green">
+      <div class="kpi-label">Novos Clientes</div>
+      <div class="kpi-value">224</div>
+      <div class="kpi-sub">vs. 184 em Abril</div>
+      <span class="badge up">▲ +21,74%</span>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SEÇÃO 2 — COMPARATIVO MESES            -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section-title">📊 Comparativo — Evolução Mensal</div>
+  <div class="card">
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Mês</th>
+          <th>Pedidos</th>
+          <th>Faturamento</th>
+          <th>Ticket Médio</th>
+          <th>Novos Clientes</th>
+          <th>Cancelamentos</th>
+          <th>Tendência</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="month-dot" style="background:#aaa"></span>Março 2026</td>
+          <td>~820</td>
+          <td>~R$ 78.500</td>
+          <td>~R$ 95,73</td>
+          <td>~160</td>
+          <td>—</td>
+          <td><span class="chip warn">⟳ Base</span></td>
+        </tr>
+        <tr>
+          <td><span class="month-dot" style="background:#f59e0b"></span>Abril 2026</td>
+          <td>~1.001</td>
+          <td>~R$ 101.508</td>
+          <td>~R$ 101,41</td>
+          <td>~184</td>
+          <td>0,40%</td>
+          <td><span class="chip ok">▲ Alta</span></td>
+        </tr>
+        <tr class="highlight">
+          <td><span class="month-dot" style="background:#ea1d2c"></span><strong>Maio 2026 ★</strong></td>
+          <td><strong>1.021</strong></td>
+          <td><strong>R$ 99.633,91</strong></td>
+          <td><strong>R$ 97,58</strong></td>
+          <td><strong>224</strong></td>
+          <td><strong>0,29%</strong></td>
+          <td><span class="chip ok">▲ Crescendo</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px;color:#aaa;margin-top:10px;padding:0 4px">* Dados de Março estimados com base em tendência das semanas coletadas anteriormente.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SEÇÃO 3 — HORÁRIOS E DIAS              -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section-title">🕐 Horários e Dias com Mais Vendas</div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="kpi-label">Dias da semana — Total do mês</div>
+      <div style="margin-top:14px" class="bar-group">
+        <div class="bar-item">
+          <span class="bar-label">Seg</span>
+          <div class="bar-track"><div class="bar-fill" style="width:51%">110</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">Ter</span>
+          <div class="bar-track"><div class="bar-fill" style="width:49%">105</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">Qua</span>
+          <div class="bar-track"><div class="bar-fill" style="width:43%">92</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">Qui</span>
+          <div class="bar-track"><div class="bar-fill" style="width:48%">102</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">Sex</span>
+          <div class="bar-track"><div class="bar-fill" style="width:95%">203</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">⭐ Sáb</span>
+          <div class="bar-track"><div class="bar-fill" style="width:100%">214</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">Dom</span>
+          <div class="bar-track"><div class="bar-fill" style="width:91%">195</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="kpi-label">Horários — Semana (Seg–Qui)</div>
+      <div style="margin-top:14px" class="bar-group">
+        <div class="bar-item">
+          <span class="bar-label">10h–12h</span>
+          <div class="bar-track"><div class="bar-fill blue" style="width:40%">58</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">12h–14h</span>
+          <div class="bar-track"><div class="bar-fill blue" style="width:33%">48</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">14h–16h</span>
+          <div class="bar-track"><div class="bar-fill blue" style="width:28%">41</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">16h–18h</span>
+          <div class="bar-track"><div class="bar-fill blue" style="width:31%">45</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">⭐ 18h–20h</span>
+          <div class="bar-track"><div class="bar-fill" style="width:100%">146</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">20h–22h</span>
+          <div class="bar-track"><div class="bar-fill" style="width:49%">71</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SEÇÃO 4 — FORMAS DE PAGAMENTO          -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section-title">💳 Formas de Pagamento</div>
+  <div class="grid-3">
+
+    <div class="card">
+      <div class="kpi-label">Distribuição</div>
+      <div style="margin-top:14px" class="pay-list">
+        <div class="pay-item">
+          <div class="pay-dot" style="background:#00b37d"></div>
+          <span class="pay-name">🟢 Pix</span>
+          <span class="pay-val">389</span>
+          <span class="pay-pct">38%</span>
+        </div>
+        <div class="pay-item">
+          <div class="pay-dot" style="background:#3b82f6"></div>
+          <span class="pay-name">💳 Crédito</span>
+          <span class="pay-val">270</span>
+          <span class="pay-pct">26%</span>
+        </div>
+        <div class="pay-item">
+          <div class="pay-dot" style="background:#8b5cf6"></div>
+          <span class="pay-name">📱 Carteira digital</span>
+          <span class="pay-val">131</span>
+          <span class="pay-pct">13%</span>
+        </div>
+        <div class="pay-item">
+          <div class="pay-dot" style="background:#aaa"></div>
+          <span class="pay-name">⚙️ Outros</span>
+          <span class="pay-val">90</span>
+          <span class="pay-pct">9%</span>
+        </div>
+        <div class="pay-item">
+          <div class="pay-dot" style="background:#60a5fa"></div>
+          <span class="pay-name">💳 Débito</span>
+          <span class="pay-val">78</span>
+          <span class="pay-pct">8%</span>
+        </div>
+        <div class="pay-item">
+          <div class="pay-dot" style="background:#34d399"></div>
+          <span class="pay-name">💵 Dinheiro</span>
+          <span class="pay-val">40</span>
+          <span class="pay-pct">4%</span>
+        </div>
+        <div class="pay-item">
+          <div class="pay-dot" style="background:#f59e0b"></div>
+          <span class="pay-name">🍽️ Vale Refeição</span>
+          <span class="pay-val">23</span>
+          <span class="pay-pct">2%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="kpi-label">Insight de Pagamento</div>
+      <div style="margin-top:14px">
+        <div class="alert-box green" style="margin-bottom:12px">
+          <span class="alert-icon">📱</span>
+          <div class="alert-text">
+            <strong>PIX domina com 38%</strong>
+            <span>389 pedidos via PIX — reflte a preferência crescente por pagamentos instantâneos em Dourados.</span>
+          </div>
+        </div>
+        <div class="alert-box orange">
+          <span class="alert-icon">📋</span>
+          <div class="alert-text">
+            <strong>Vale Refeição subutilizado (2%)</strong>
+            <span>Apenas 23 pedidos com VR. Oportunidade para divulgar aceitação do benefício.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="kpi-label">Conversão do Cardápio</div>
+      <div style="margin-top:14px">
+        <div class="status-row">
+          <span class="status-label">Visitas</span>
+          <span class="status-value">5.916</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Visualizaram item</span>
+          <span class="status-value">3.811 <small style="color:#aaa">(64%)</small></span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Adicionaram à sacola</span>
+          <span class="status-value">1.885 <small style="color:#aaa">(32%)</small></span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Revisaram pedido</span>
+          <span class="status-value">1.866</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Concluíram pedido</span>
+          <span class="status-value number-good">1.004 <small style="color:#1a8a4a">(17%)</small></span>
+        </div>
+        <div style="margin-top:10px;padding:10px;background:#f0faf4;border-radius:8px;font-size:13px;text-align:center">
+          🟢 Conversão <strong>+0,83%</strong> acima do mês anterior
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SEÇÃO 5 — CARDÁPIO: ITENS              -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section-title">🍣 Cardápio — Itens Mais e Menos Vendidos</div>
+  <div class="grid-2">
+
+    <!-- MAIS VENDIDOS -->
+    <div class="card">
+      <div class="kpi-label">🏆 Top 5 — Mais Vendidos em Maio</div>
+      <div style="margin-top:14px">
+
+        <div class="item-row">
+          <div class="rank-num rank-1">1</div>
+          <div style="flex:1">
+            <div class="item-name">Yakisoba <span class="item-cat">Pratos Quentes</span></div>
+          </div>
+          <div class="item-stats">
+            <div class="vendas">193 vendas</div>
+            <div class="valor">R$ 7.676,50 · 30% conv.</div>
+          </div>
+        </div>
+
+        <div class="item-row">
+          <div class="rank-num rank-2">2</div>
+          <div style="flex:1">
+            <div class="item-name">Uramaki Philadelphia <span class="item-cat">Sushi / Porções</span></div>
+          </div>
+          <div class="item-stats">
+            <div class="vendas">126 vendas</div>
+            <div class="valor">R$ 3.691,00 · 43% conv.</div>
+          </div>
+        </div>
+
+        <div class="item-row">
+          <div class="rank-num rank-3">3</div>
+          <div style="flex:1">
+            <div class="item-name">Barca Especial + Hot Roll <span class="item-cat">Promoção Por Tempo Limitado ⭐</span></div>
+          </div>
+          <div class="item-stats">
+            <div class="vendas">117 vendas</div>
+            <div class="valor" style="color:#ea1d2c;font-weight:700">R$ 15.320,00 · 15% conv.</div>
+          </div>
+        </div>
+
+        <div class="item-row">
+          <div class="rank-num rank-other">4</div>
+          <div style="flex:1">
+            <div class="item-name">Temakis <span class="item-cat">Temakis</span></div>
+          </div>
+          <div class="item-stats">
+            <div class="vendas">106 vendas</div>
+            <div class="valor">R$ 3.012,50 · 20% conv.</div>
+          </div>
+        </div>
+
+        <div class="item-row">
+          <div class="rank-num rank-other">5</div>
+          <div style="flex:1">
+            <div class="item-name">Teishoku Karaague <span class="item-cat">Pratos Quentes</span></div>
+          </div>
+          <div class="item-stats">
+            <div class="vendas">102 vendas</div>
+            <div class="valor">R$ 5.324,50 · 39% conv.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;padding:10px;background:#fff8f0;border-radius:8px;font-size:12px;color:#666">
+          💡 <strong>Destaque:</strong> A Barca Especial + Hot Roll gerou <strong style="color:#ea1d2c">R$15.320,00</strong> — o maior faturamento individual, apesar de ser a 3ª em volume. Alta margem por pedido.
+        </div>
+      </div>
+    </div>
+
+    <!-- MENOS VENDIDOS -->
+    <div class="card">
+      <div class="kpi-label">⚠️ Bottom 3 — Menos Vendidos (de 58 itens)</div>
+      <div style="margin-top:14px">
+
+        <div class="item-row danger">
+          <div class="rank-num rank-other">56</div>
+          <div style="flex:1">
+            <div class="item-name">Executivo Tilapia <span class="item-cat">Executivos</span></div>
+          </div>
+          <div class="item-stats">
+            <div class="vendas" style="color:#cc1a24">2 vendas</div>
+            <div class="valor">R$ 78,00 · 3 visitas</div>
+          </div>
+        </div>
+
+        <div class="item-row danger">
+          <div class="rank-num rank-other">57</div>
+          <div style="flex:1">
+            <div class="item-name">Teishoku Karaague + Bebida <span class="item-cat">Promoção do Dia</span></div>
+          </div>
+          <div class="item-stats">
+            <div class="vendas" style="color:#cc1a24">2 vendas</div>
+            <div class="valor">R$ 110,00 · 16 visitas</div>
+          </div>
+        </div>
+
+        <div class="item-row danger">
+          <div class="rank-num rank-other">58</div>
+          <div style="flex:1">
+            <div class="item-name">Água Tônica Schweppes 350ml <span class="item-cat">Bebidas</span></div>
+          </div>
+          <div class="item-stats">
+            <div class="vendas" style="color:#cc1a24">1 venda</div>
+            <div class="valor">R$ 8,00 · 0 visitas</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px">
+          <div class="alert-box red">
+            <span class="alert-icon">🗑️</span>
+            <div class="alert-text">
+              <strong>Água Tônica: considerar retirada</strong>
+              <span>0 visitas orgânicas, apenas 1 venda no mês inteiro. Ocupa espaço no cardápio sem gerar valor.</span>
+            </div>
+          </div>
+          <div class="alert-box orange" style="margin-top:8px">
+            <span class="alert-icon">📸</span>
+            <div class="alert-text">
+              <strong>Executivo Tilapia: revisar foto e descrição</strong>
+              <span>Apenas 3 visitas — baixíssima descoberta. Testar nova foto ou reposicionamento no cardápio.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SEÇÃO 6 — OPERAÇÃO                     -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section-title">⚙️ Operação</div>
+  <div class="grid-3">
+
+    <div class="card accent-green">
+      <div class="kpi-label">Pedidos Cancelados</div>
+      <div class="kpi-value">0,29%</div>
+      <div class="kpi-sub">vs. ~0,40% em Abril</div>
+      <span class="badge up">▼ -27,5%</span>
+      <div style="margin-top:12px">
+        <div class="status-row"><span class="status-label">Total (c/ impacto Selo)</span><span class="chip warn">1 cancel.</span></div>
+        <div class="status-row"><span class="status-label">Parciais (c/ impacto Selo)</span><span class="chip warn">1 cancel.</span></div>
+        <div class="status-row"><span class="status-label">Acidentais (s/ impacto)</span><span class="chip ok">1 cancel.</span></div>
+      </div>
+    </div>
+
+    <div class="card accent-orange">
+      <div class="kpi-label">Chamados Abertos</div>
+      <div class="kpi-value">1,56%</div>
+      <div class="kpi-sub">vs. ~1,29% em Abril</div>
+      <span class="badge down">▲ +20,93%</span>
+      <div style="margin-top:12px">
+        <div class="status-row">
+          <span class="status-label">⚠️ Acordos de Atraso</span>
+          <span class="chip bad">15 acordos</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Pedido impróprio</span>
+          <span class="chip warn">1 acordo</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card accent-green">
+      <div class="kpi-label">Disponibilidade</div>
+      <div class="kpi-value">99,7%</div>
+      <div class="kpi-sub">323h 16min aberto</div>
+      <span class="badge up">▲ +3% vs Abril</span>
+      <div style="margin-top:12px">
+        <div class="status-row">
+          <span class="status-label">Melhor dia de despacho</span>
+          <span class="status-value">22/05 — 56 ped.</span>
+        </div>
+        <div style="margin-top:10px;padding:10px;background:#f0faf4;border-radius:8px;font-size:12px;text-align:center">
+          ✅ Disponibilidade <strong>excelente</strong>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ALERTA ATRASOS -->
+  <div class="alert-box red" style="margin-top:4px">
+    <span class="alert-icon">🚨</span>
+    <div class="alert-text">
+      <strong>15 acordos de atraso em Maio — atenção urgente!</strong>
+      <span>Esses acordos têm <strong>impacto direto no Selo Super</strong>. Picos de pedidos nos fins de semana (Sex 203 + Sáb 214 + Dom 195 = 612 pedidos) podem estar sobrecarregando a produção. Revisar capacidade operacional para o próximo mês.</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SEÇÃO 7 — CLIENTES                     -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section-title">👥 Perfil de Clientes (01/05 → 01/06)</div>
+  <div class="grid-4" style="margin-bottom:16px">
+
+    <div class="card accent-green">
+      <div class="kpi-label">Clientes Novos</div>
+      <div class="kpi-value">214</div>
+      <div class="kpi-sub">vs. 176 em Abril</div>
+      <span class="badge up">▲ +21,59%</span>
+    </div>
+
+    <div class="card accent-red">
+      <div class="kpi-label">Clientes Frequentes</div>
+      <div class="kpi-value">131</div>
+      <div class="kpi-sub">vs. 164 em Abril</div>
+      <span class="badge down">▼ -20,12%</span>
+    </div>
+
+    <div class="card accent-orange">
+      <div class="kpi-label">Clientes em Alerta</div>
+      <div class="kpi-value">924</div>
+      <div class="kpi-sub">sem pedir há 30+ dias</div>
+      <span class="badge down">▲ +7,32%</span>
+    </div>
+
+    <div class="card">
+      <div class="kpi-label">Clientes Sumidos</div>
+      <div class="kpi-value">1.054</div>
+      <div class="kpi-sub">sem pedir há 90+ dias</div>
+      <span class="badge up">▼ -1,59%</span>
+    </div>
+
+  </div>
+
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="kpi-label">Raio de Entrega — Clientes por Distância</div>
+      <div style="margin-top:14px" class="bar-group">
+        <div class="bar-item">
+          <span class="bar-label">0,5 Km</span>
+          <div class="bar-track"><div class="bar-fill blue" style="width:1%">1</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">⭐ 1 Km</span>
+          <div class="bar-track"><div class="bar-fill green" style="width:100%">212 ▲+23%</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">1,5 Km</span>
+          <div class="bar-track"><div class="bar-fill" style="width:12%;background:#f59e0b">25 ▼</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">2 Km</span>
+          <div class="bar-track"><div class="bar-fill blue" style="width:68%">144 ▲+7%</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">2,5 Km</span>
+          <div class="bar-track"><div class="bar-fill blue" style="width:36%">77 ▲+7%</div></div>
+        </div>
+        <div class="bar-item">
+          <span class="bar-label">3 Km</span>
+          <div class="bar-track"><div class="bar-fill" style="width:40%;background:#f59e0b">84 ▼-22%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="kpi-label">Análise de Clientes</div>
+      <div style="margin-top:14px">
+        <div class="alert-box green">
+          <span class="alert-icon">🌟</span>
+          <div class="alert-text">
+            <strong>+214 novos clientes (+21,59%)</strong>
+            <span>Melhor mês em aquisição de novos clientes — efeito das campanhas ativadas em 21/05 (Campanha Inteligente + Cupom R$12).</span>
+          </div>
+        </div>
+        <div class="alert-box red" style="margin-top:8px">
+          <span class="alert-icon">⚠️</span>
+          <div class="alert-text">
+            <strong>Clientes frequentes caindo: 164→131 (-20%)</strong>
+            <span>Preocupante. Novos clientes entrando mas os existentes não estão retornando. Foco em fidelização para Junho.</span>
+          </div>
+        </div>
+        <div class="alert-box orange" style="margin-top:8px">
+          <span class="alert-icon">👻</span>
+          <div class="alert-text">
+            <strong>924 clientes em alerta — base crescendo</strong>
+            <span>Cupom de R$12 ativo mas ainda gerando baixo uso. Avaliar aumento para R$22 em Junho.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SEÇÃO 8 — MARKETING / CAMPANHAS        -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section-title">📣 Marketing — Campanhas de Maio</div>
+  <div class="grid-4">
+
+    <div class="card accent-blue">
+      <div class="kpi-label">Pedidos c/ Promoção</div>
+      <div class="kpi-value">447</div>
+      <div class="kpi-sub">44% dos 1.021 pedidos</div>
+      <span class="badge down">▼ -22% vs Abril</span>
+    </div>
+
+    <div class="card accent-blue">
+      <div class="kpi-label">Vendas c/ Promoção</div>
+      <div class="kpi-value">R$38.055</div>
+      <div class="kpi-sub">38% do faturamento total</div>
+      <span class="badge down">▼ -28% vs Abril</span>
+    </div>
+
+    <div class="card accent-green">
+      <div class="kpi-label">ROI — Retorno/Real</div>
+      <div class="kpi-value">R$9,22</div>
+      <div class="kpi-sub">Classificação: Muito Bom</div>
+      <span class="badge down">▼ -28% vs Abril</span>
+    </div>
+
+    <div class="card">
+      <div class="kpi-label">Total Investido</div>
+      <div class="kpi-value">R$6.602</div>
+      <div class="kpi-sub">Loja R$3.724 + iFood R$2.878</div>
+      <span class="badge down">▼ -11% vs Abril</span>
+    </div>
+
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="kpi-label" style="margin-bottom:14px">Campanhas Ativas em Maio</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-size:13px">
+      <div style="background:#f8f9fa;border-radius:10px;padding:14px">
+        <div style="font-weight:700;color:#ea1d2c;margin-bottom:6px">🚀 Campanha Inteligente</div>
+        <div style="color:#555">Ativada em 21/05 · R$200/dia</div>
+        <div style="color:#1a8a4a;font-weight:700;margin-top:4px">ROI histórico R$19,49/real</div>
+      </div>
+      <div style="background:#f8f9fa;border-radius:10px;padding:14px">
+        <div style="font-weight:700;color:#3b82f6;margin-bottom:6px">🎟️ Cupom de R$12</div>
+        <div style="color:#555">Público: clientes perdidos · 140 cupons/sem</div>
+        <div style="color:#f59e0b;font-weight:700;margin-top:4px">Em fase de teste — avaliar subir para R$22</div>
+      </div>
+      <div style="background:#f8f9fa;border-radius:10px;padding:14px">
+        <div style="font-weight:700;color:#8b5cf6;margin-bottom:6px">🏷️ Desconto em Itens</div>
+        <div style="color:#555">38 itens com desconto</div>
+        <div style="color:#1a8a4a;font-weight:700;margin-top:4px">ROI R$7,49/real — principal driver anterior</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SEÇÃO 9 — PLANO DE AÇÃO JUNHO          -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section-title">🎯 Plano de Ação — Junho 2026</div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="kpi-label" style="color:#ea1d2c">🔴 Urgente</div>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+        <div class="alert-box red">
+          <span class="alert-icon">🚨</span>
+          <div class="alert-text">
+            <strong>Resolver 15 acordos de atraso</strong>
+            <span>Mapear quais pedidos atrasaram, nos dias Sex-Sáb-Dom. Reforçar equipe no pico ou limitar capacidade de aceite.</span>
+          </div>
+        </div>
+        <div class="alert-box red">
+          <span class="alert-icon">📉</span>
+          <div class="alert-text">
+            <strong>Reverter queda dos clientes frequentes</strong>
+            <span>De 164 para 131 (-20%). Criar promoção de fidelidade — ex: "na 3ª compra ganhe X% off".</span>
+          </div>
+        </div>
+        <div class="alert-box red">
+          <span class="alert-icon">📱</span>
+          <div class="alert-text">
+            <strong>Ticket médio caiu: R$101→R$97</strong>
+            <span>Criar combo ou sugestão de complemento para aumentar valor médio do pedido.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="kpi-label" style="color:#f59e0b">🟡 Melhorias</div>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+        <div class="alert-box orange">
+          <span class="alert-icon">💰</span>
+          <div class="alert-text">
+            <strong>Aumentar Campanha Inteligente: R$200→R$300/dia</strong>
+            <span>ROI de R$19,49 comprova que o teto atual está deixando pedidos na mesa. Upgrade sugerido.</span>
+          </div>
+        </div>
+        <div class="alert-box orange">
+          <span class="alert-icon">🎟️</span>
+          <div class="alert-text">
+            <strong>Subir cupom de reativação: R$12→R$22</strong>
+            <span>Para os 924 clientes em alerta. O valor maior gera mais tração — ROI ainda positivo.</span>
+          </div>
+        </div>
+        <div class="alert-box orange">
+          <span class="alert-icon">🗑️</span>
+          <div class="alert-text">
+            <strong>Remover Água Tônica Schweppes e revisar Executivo Tilapia</strong>
+            <span>0 visitas orgânicas. Enxugar cardápio melhora conversão geral.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  Gerado em 02/06/2026 · Massashin Dourados · iFood Portal — Dados de Maio 2026 · Relatório criado via Claude
+</div>
+
+</body>
+</html>
