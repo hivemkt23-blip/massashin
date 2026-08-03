@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório Julho 2026 — Massashin Dourados</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d0d1a;
+    --bg2: #13132b;
+    --bg3: #1a1a35;
+    --red: #E53935;
+    --red2: #ff5252;
+    --gold: #FFD700;
+    --gold2: #FFA000;
+    --green: #00C853;
+    --orange: #FF6D00;
+    --text: #e8e8f0;
+    --muted: #8888aa;
+    --border: #2a2a4a;
+    --card: #181830;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0d0d1a 0%, #1a0a0a 60%, #220505 100%);
+    border-bottom: 2px solid var(--red);
+    padding: 28px 40px 20px;
+    display: flex; align-items: center; gap: 24px;
+  }
+  .header-icon { font-size: 3rem; filter: drop-shadow(0 0 12px #E53935aa); }
+  .header-text h1 { font-size: 1.8rem; font-weight: 700; color: var(--gold); letter-spacing: 1px; }
+  .header-text p { font-size: 0.95rem; color: var(--muted); margin-top: 4px; }
+  .header-badge {
+    margin-left: auto;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000; font-weight: 800; font-size: 0.85rem;
+    padding: 8px 16px; border-radius: 20px; letter-spacing: 1px;
+  }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--bg2); padding: 0 40px; }
+  .tab {
+    padding: 14px 24px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
+    color: var(--muted); border-bottom: 3px solid transparent; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* CONTENT */
+  .content { display: none; padding: 32px 40px 60px; max-width: 1400px; margin: 0 auto; }
+  .content.active { display: block; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 1.15rem; font-weight: 700; color: var(--gold);
+    margin-bottom: 20px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::before { content: ''; display: block; width: 4px; height: 20px; background: var(--red); border-radius: 2px; }
+
+  /* GRID */
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-5 { grid-template-columns: repeat(5, 1fr); }
+
+  /* KPI CARD */
+  .kpi {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+    display: flex; flex-direction: column; gap: 6px;
+    transition: transform 0.2s;
+  }
+  .kpi:hover { transform: translateY(-2px); }
+  .kpi-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .kpi-value { font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1; }
+  .kpi-value.gold { color: var(--gold); }
+  .kpi-value.red { color: var(--red2); }
+  .kpi-value.green { color: var(--green); }
+  .kpi-delta {
+    font-size: 0.8rem; font-weight: 600; padding: 3px 8px; border-radius: 12px;
+    display: inline-flex; align-items: center; gap: 4px; width: fit-content;
+  }
+  .kpi-delta.up { background: #00C85322; color: var(--green); }
+  .kpi-delta.down { background: #E5393522; color: var(--red2); }
+  .kpi-delta.neutral { background: #FFD70022; color: var(--gold); }
+  .kpi-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+  /* CHART CARD */
+  .chart-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px;
+  }
+  .chart-card h3 { font-size: 0.9rem; color: var(--muted); margin-bottom: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* TABLE */
+  .table-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .table-card h3 { padding: 16px 20px; font-size: 0.9rem; color: var(--gold); font-weight: 700; border-bottom: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; }
+  th { padding: 10px 16px; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; text-align: left; background: #11112a; }
+  td { padding: 12px 16px; font-size: 0.88rem; border-top: 1px solid var(--border); }
+  tr:hover td { background: #1a1a35; }
+  .rank { font-weight: 800; color: var(--gold); }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;
+  }
+  .badge-red { background: #E5393522; color: var(--red2); }
+  .badge-green { background: #00C85322; color: var(--green); }
+  .badge-gold { background: #FFD70022; color: var(--gold); }
+  .badge-orange { background: #FF6D0022; color: var(--orange); }
+
+  /* ALERT */
+  .alert {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--red); border-radius: 8px;
+    padding: 16px 20px; margin-bottom: 12px;
+  }
+  .alert.green { border-left-color: var(--green); }
+  .alert.gold { border-left-color: var(--gold); }
+  .alert.orange { border-left-color: var(--orange); }
+  .alert h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; }
+  .alert p { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+
+  /* ACTION LIST */
+  .action-item {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; margin-bottom: 10px;
+  }
+  .action-num {
+    background: var(--red); color: #fff; font-weight: 800; font-size: 0.85rem;
+    width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+  }
+  .action-body h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
+  .action-body p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+  /* FUNNEL */
+  .funnel { display: flex; gap: 2px; }
+  .funnel-step {
+    flex: 1; background: var(--bg3); border-radius: 8px; padding: 16px 12px;
+    text-align: center; border: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .funnel-step .num { font-size: 1.6rem; font-weight: 800; color: var(--gold); }
+  .funnel-step .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; }
+  .funnel-step .pct { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+  .funnel-arrow { display: flex; align-items: center; color: var(--border); font-size: 1.2rem; }
+
+  /* SUPER CARD */
+  .super-card {
+    background: linear-gradient(135deg, #13132b, #1a0e0e);
+    border: 1px solid var(--gold); border-radius: 12px;
+    padding: 24px; text-align: center;
+  }
+  .super-icon { font-size: 3rem; margin-bottom: 8px; }
+  .super-title { font-size: 1.4rem; font-weight: 800; color: var(--gold); }
+  .super-sub { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+
+  /* PROMO TABLE */
+  .promo-tag { font-size: 0.72rem; background: #E5393522; color: var(--red2); padding: 2px 8px; border-radius: 8px; }
+  .roi-high { color: var(--gold); font-weight: 800; }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 28px 0; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .header { padding: 20px; flex-wrap: wrap; }
+    .content { padding: 20px; }
+    .tabs { padding: 0 16px; overflow-x: auto; }
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-5 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-icon">🍣</div>
+  <div class="header-text">
+    <h1>Massashin Dourados</h1>
+    <p>Relatório de Desempenho — Julho 2026 | Av. Marcelino Pires, 3600 — Jardim Caramuru, MS</p>
+  </div>
+  <div class="header-badge">⭐ NÍVEL SUPER</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('resumo')">📊 Resumo Geral</div>
+  <div class="tab" onclick="showTab('evolucao')">📈 Evolução Mensal</div>
+  <div class="tab" onclick="showTab('estrategias')">🎯 Estratégias</div>
+  <div class="tab" onclick="showTab('crm')">👥 CRM & Campanhas</div>
+</div>
+
+<!-- ========== ABA RESUMO ========== -->
+<div id="tab-resumo" class="content active">
+
+  <div class="section-title">Indicadores Principais — Julho 2026</div>
+  <div class="grid grid-4" style="margin-bottom:28px;">
+    <div class="kpi">
+      <div class="kpi-label">Total de Pedidos</div>
+      <div class="kpi-value gold">1.168</div>
+      <div class="kpi-delta down">↓ 9,25% vs Junho</div>
+      <div class="kpi-sub">Junho: 1.287 pedidos</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Faturamento Total</div>
+      <div class="kpi-value">R$111.687</div>
+      <div class="kpi-delta down">↓ 9,97% vs Junho</div>
+      <div class="kpi-sub">Junho: R$124.057</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Ticket Médio</div>
+      <div class="kpi-value">R$95,62</div>
+      <div class="kpi-delta down">↓ 0,80% vs Junho</div>
+      <div class="kpi-sub">Junho: R$96,39</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Novos Clientes</div>
+      <div class="kpi-value">232</div>
+      <div class="kpi-delta down">↓ 24,68% vs Junho</div>
+      <div class="kpi-sub">Junho: 308 novos</div>
+    </div>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:28px;">
+    <div class="kpi">
+      <div class="kpi-label">Cancelamentos</div>
+      <div class="kpi-value red">0,34%</div>
+      <div class="kpi-delta down">↑ 47,8% vs Junho</div>
+      <div class="kpi-sub">Junho: 0,23% | Limite Super: 1%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Acordos de Atraso</div>
+      <div class="kpi-value green">12</div>
+      <div class="kpi-delta up">↓ 50% vs Junho ✅</div>
+      <div class="kpi-sub">Junho: 24 acordos</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Tempo Aberto</div>
+      <div class="kpi-value green">100%</div>
+      <div class="kpi-delta up">↑ melhora vs Junho</div>
+      <div class="kpi-sub">Junho: 99,86%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">ROI Marketing</div>
+      <div class="kpi-value gold">R$15,59</div>
+      <div class="kpi-delta up">↑ 12,2% vs Junho</div>
+      <div class="kpi-sub">Junho: R$13,89/real</div>
+    </div>
+  </div>
+
+  <!-- Super e Avaliações -->
+  <div class="grid grid-2" style="margin-bottom:28px;">
+    <div class="super-card">
+      <div class="super-icon">⭐</div>
+      <div class="super-title">Nível Super Mantido</div>
+      <div class="super-sub" style="margin-top:12px;">Nota: <strong style="color:var(--gold)">4,9</strong> | 578 avaliações (90 dias)</div>
+      <div style="margin-top:12px; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <div style="font-size:1.2rem; font-weight:800; color:var(--green)">0,17%</div>
+          <div style="font-size:0.72rem; color:var(--muted)">Cancelamentos (Super)</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:1.2rem; font-weight:800; color:var(--green)">1,47%</div>
+          <div style="font-size:0.72rem; color:var(--muted)">Chamados</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:1.2rem; font-weight:800; color:var(--gold)">94,8%</div>
+          <div style="font-size:0.72rem; color:var(--muted)">Notas 5 estrelas</div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Distribuição de Avaliações</h3>
+      <div class="chart-wrap">
+        <canvas id="chartAval"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top 5 Mais Vendidos -->
+  <div class="section-title">Top 5 Mais Vendidos — Julho 2026</div>
+  <div class="table-card" style="margin-bottom:28px;">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Item</th>
+          <th>Visitas</th>
+          <th>Vendas</th>
+          <th>Conversão</th>
+          <th>Faturamento</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="rank">1</td>
+          <td>🍜 Yakisoba</td>
+          <td>690</td>
+          <td>177</td>
+          <td><span class="badge badge-gold">26%</span></td>
+          <td style="color:var(--text);font-weight:600;">R$7.016,50</td>
+        </tr>
+        <tr>
+          <td class="rank">2</td>
+          <td>🌯 Temakis</td>
+          <td>862</td>
+          <td>161</td>
+          <td><span class="badge badge-orange">19%</span></td>
+          <td style="color:var(--text);font-weight:600;">R$4.632,00</td>
+        </tr>
+        <tr>
+          <td class="rank">3</td>
+          <td>🎌 Barca Especial + Hot Roll</td>
+          <td>788</td>
+          <td>130</td>
+          <td><span class="badge badge-orange">16%</span></td>
+          <td style="color:var(--gold);font-weight:800;">R$17.074,00 ⭐</td>
+        </tr>
+        <tr>
+          <td class="rank">4</td>
+          <td>🍱 Teishoku Karaague</td>
+          <td>330</td>
+          <td>120</td>
+          <td><span class="badge badge-green">36%</span></td>
+          <td style="color:var(--text);font-weight:600;">R$6.262,00</td>
+        </tr>
+        <tr>
+          <td class="rank">5</td>
+          <td>🍙 Uramaki Philadelphia</td>
+          <td>316</td>
+          <td>118</td>
+          <td><span class="badge badge-green">37%</span></td>
+          <td style="color:var(--text);font-weight:600;">R$3.466,00</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Funil Cardápio -->
+  <div class="section-title">Funil de Conversão do Cardápio</div>
+  <div style="display:flex; align-items:center; gap:6px; margin-bottom:28px; overflow-x:auto; padding-bottom:8px;">
+    <div class="funnel-step">
+      <div class="num">6.458</div>
+      <div class="label">Visitas</div>
+      <div class="pct">100%</div>
+    </div>
+    <div class="funnel-arrow">›</div>
+    <div class="funnel-step">
+      <div class="num">4.151</div>
+      <div class="label">Visualizações</div>
+      <div class="pct">64,3%</div>
+    </div>
+    <div class="funnel-arrow">›</div>
+    <div class="funnel-step">
+      <div class="num">2.443</div>
+      <div class="label">Sacola</div>
+      <div class="pct">37,8%</div>
+    </div>
+    <div class="funnel-arrow">›</div>
+    <div class="funnel-step">
+      <div class="num">2.418</div>
+      <div class="label">Revisão</div>
+      <div class="pct">37,4%</div>
+    </div>
+    <div class="funnel-arrow">›</div>
+    <div class="funnel-step" style="border-color:var(--gold);">
+      <div class="num">1.154</div>
+      <div class="label">Concluídos</div>
+      <div class="pct" style="color:var(--green);">17,9% ✅</div>
+    </div>
+  </div>
+  <div class="alert green" style="margin-bottom:28px;">
+    <h4>✅ Conversão do Cardápio: +6,37% acima do período anterior</h4>
+    <p>Apesar da queda no volume total de pedidos, a taxa de conversão melhorou — sinal de que o cardápio está mais atrativo. Oportunidade: aumentar tráfego via campanhas de aquisição.</p>
+  </div>
+
+  <!-- Itens para remover -->
+  <div class="section-title">Itens com Baixo Desempenho — Candidatos à Remoção</div>
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Item</th><th>Visitas</th><th>Vendas</th><th>Faturamento</th><th>Ação</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td><td>Del Valle Pêssego</td><td>1</td><td>2</td><td>R$16,00</td>
+          <td><span class="badge badge-red">REMOVER</span></td>
+        </tr>
+        <tr>
+          <td>2</td><td>Chá Ice Tea Leão Limão 450ml</td><td>2</td><td>3</td><td>R$24,00</td>
+          <td><span class="badge badge-red">REMOVER</span></td>
+        </tr>
+        <tr>
+          <td>3</td><td>Del Valle Uva</td><td>5</td><td>3</td><td>R$24,00</td>
+          <td><span class="badge badge-red">REMOVER</span></td>
+        </tr>
+        <tr>
+          <td>4</td><td>Combinado 12</td><td>4</td><td>2</td><td>R$138,00</td>
+          <td><span class="badge badge-orange">REVISAR</span></td>
+        </tr>
+        <tr>
+          <td>5</td><td>Combinado 6</td><td>6</td><td>4</td><td>R$276,00</td>
+          <td><span class="badge badge-orange">REVISAR</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========== ABA EVOLUÇÃO ========== -->
+<div id="tab-evolucao" class="content">
+  <div class="section-title">Evolução Mensal — Massashin Dourados 2026</div>
+
+  <div class="grid grid-2" style="margin-bottom:24px;">
+    <div class="chart-card">
+      <h3>Pedidos por Mês</h3>
+      <div class="chart-wrap"><canvas id="chartPedidos"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Faturamento por Mês (R$)</h3>
+      <div class="chart-wrap"><canvas id="chartFaturamento"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="margin-bottom:24px;">
+    <div class="chart-card">
+      <h3>Novos Clientes por Mês</h3>
+      <div class="chart-wrap"><canvas id="chartNovos"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Ticket Médio por Mês (R$)</h3>
+      <div class="chart-wrap"><canvas id="chartTicket"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Comparativo tabela -->
+  <div class="section-title" style="margin-top:8px;">Comparativo Mensal</div>
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Mês</th><th>Pedidos</th><th>Faturamento</th><th>Ticket Médio</th>
+          <th>Novos Clientes</th><th>Cancelamentos</th><th>ROI Mkt</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--muted);">Maio 2026</td>
+          <td>1.021</td><td>R$99.633,91</td><td>R$97,58</td>
+          <td>224</td><td>0,29%</td><td>R$9,22</td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted);">Junho 2026</td>
+          <td>1.287</td><td>R$124.056,91</td><td>R$96,39</td>
+          <td>308</td><td>0,23%</td><td>R$13,89</td>
+        </tr>
+        <tr style="background:#1a1a35;">
+          <td style="color:var(--gold);font-weight:700;">Julho 2026</td>
+          <td style="font-weight:700;">1.168</td>
+          <td style="font-weight:700;">R$111.687,00</td>
+          <td style="font-weight:700;">R$95,62</td>
+          <td style="font-weight:700;">232</td>
+          <td style="color:var(--orange);font-weight:700;">0,34%</td>
+          <td style="color:var(--gold);font-weight:700;">R$15,59</td>
+        </tr>
+        <tr>
+          <td colspan="7" style="color:var(--muted);font-size:0.78rem; padding:12px 16px;">
+            Δ Julho vs Junho: Pedidos -9,25% | Faturamento -9,97% | Ticket -0,80% | Novos -24,68% | ROI +12,24% ✅
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="grid grid-2" style="margin-bottom:24px;">
+    <div class="chart-card">
+      <h3>Clientes Frequentes por Mês</h3>
+      <div class="chart-wrap"><canvas id="chartFreq"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Clientes em Alerta por Mês</h3>
+      <div class="chart-wrap"><canvas id="chartAlerta"></canvas></div>
+    </div>
+  </div>
+
+  <div class="alert gold">
+    <h4 style="color:var(--gold)">📉 Análise: Julho abaixo de Junho — mas Junho foi o melhor mês histórico</h4>
+    <p>Junho 2026 foi o pico histórico do Massashin Dourados com R$124k e 1.287 pedidos. A queda de Julho é natural após um mês recorde. O faturamento de R$111k segue 12% acima de Maio, mostrando crescimento sustentado. O destaque positivo é o ROI de marketing que cresceu para R$15,59 (vs R$13,89 em Junho), e os acordos de atraso caíram pela metade (24 → 12).</p>
+  </div>
+</div>
+
+<!-- ========== ABA ESTRATÉGIAS ========== -->
+<div id="tab-estrategias" class="content">
+
+  <div class="section-title">Análise de Performance — Julho 2026</div>
+
+  <div class="grid grid-2" style="margin-bottom:24px;">
+    <div>
+      <div class="alert green">
+        <h4 style="color:var(--green)">✅ Pontos Positivos</h4>
+        <p>
+          • Nível Super mantido (nota 4,9 | cancelamentos 0,17%)<br>
+          • Acordos de atraso caíram 50%: 24 → 12 ✅<br>
+          • Loja 100% aberta durante todo o mês ✅<br>
+          • ROI de marketing cresceu: R$13,89 → R$15,59 (+12%) ✅<br>
+          • Conversão do cardápio melhorou +6,37% ✅<br>
+          • Campanha inteligente: ROI R$17,65 (excelente) ✅
+        </p>
+      </div>
+      <div class="alert">
+        <h4 style="color:var(--red2)">⚠️ Pontos de Atenção</h4>
+        <p>
+          • Pedidos caíram: 1.287 → 1.168 (-9,25%)<br>
+          • Faturamento: R$124k → R$112k (-9,97%)<br>
+          • Novos clientes caíram: 308 → 232 (-24,68%)<br>
+          • Clientes frequentes: 207 → 173 (-16,43%)<br>
+          • Clientes em alerta cresceram: 942 → 1.109 (+17,73%)<br>
+          • Cancelamentos subiram: 0,23% → 0,34%
+        </p>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Desempenho das Promoções (Julho)</h3>
+      <div class="chart-wrap"><canvas id="chartPromos"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section-title">Plano de Ação — Agosto 2026</div>
+
+  <div class="action-item">
+    <div class="action-num">1</div>
+    <div class="action-body">
+      <h4>Cupom de Reativação R$22 para os 1.109 clientes em alerta</h4>
+      <p>A base de clientes em alerta cresceu de 942 → 1.109 (+18%). Aumentar o cupom de R$12 para R$22 (pedido mínimo R$40) para converter mais. Foco no horário de almoço (11h–14h) e jantar (18h–22h). Meta: reativar 15% = 166 clientes.</p>
+    </div>
+  </div>
+
+  <div class="action-item">
+    <div class="action-num">2</div>
+    <div class="action-body">
+      <h4>Aumentar Campanha Inteligente para R$250/dia</h4>
+      <p>ROI de R$17,65 é excelente. Com 741 pedidos gerados em Julho e orçamento de R$200/dia, há espaço para aumentar para R$250/dia e potencialmente gerar +100 pedidos adicionais por mês. Projeção: +R$9.500 em receita com ~R$1.550 de investimento adicional.</p>
+    </div>
+  </div>
+
+  <div class="action-item">
+    <div class="action-num">3</div>
+    <div class="action-body">
+      <h4>Promoção de Fidelidade para Clientes Frequentes</h4>
+      <p>Clientes frequentes caíram de 207 → 173 (-16%). Criar promoção exclusiva "Cliente Fiel": após 3 pedidos no mês, desconto de R$15 no 4º pedido. Público: 507 clientes recuperados + 173 frequentes atuais. Meta: reverter queda e chegar a 220+ frequentes em Agosto.</p>
+    </div>
+  </div>
+
+  <div class="action-item">
+    <div class="action-num">4</div>
+    <div class="action-body">
+      <h4>Remover Bebidas com Baixa Performance do Cardápio</h4>
+      <p>Del Valle Pêssego (2 vendas, R$16), Chá Ice Tea Leão Limão (3 vendas, R$24) e Del Valle Uva (3 vendas, R$24) poluem o cardápio sem gerar receita. Remover imediatamente para melhorar a experiência de busca e focar nos itens que convertem.</p>
+    </div>
+  </div>
+
+  <div class="action-item">
+    <div class="action-num">5</div>
+    <div class="action-body">
+      <h4>Campanha de Aquisição para Novos Clientes</h4>
+      <p>Novos clientes caíram de 308 → 232 (-25%). Criar promoção "Primeira Vez": cupom de R$15 para primeiro pedido. Combinar com Campanha Inteligente (já ativa) para ampliar alcance. Meta: 280+ novos clientes em Agosto.</p>
+    </div>
+  </div>
+
+  <div class="action-item">
+    <div class="action-num">6</div>
+    <div class="action-body">
+      <h4>Manter Operação Impecável — Cancelamentos em Foco</h4>
+      <p>Cancelamentos subiram de 0,23% → 0,34%. Ainda longe do limite Super (1%), mas a tendência é preocupante. Acordos de atraso melhoraram 50% — manter reforço de equipe nas sextas e sábados. Meta: cancelamentos abaixo de 0,25% em Agosto.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-title">Meta Agosto 2026</div>
+  <div class="grid grid-3">
+    <div class="kpi" style="border-color:var(--gold);text-align:center;">
+      <div class="kpi-label">Meta Pedidos</div>
+      <div class="kpi-value gold" style="font-size:2.4rem;">1.280+</div>
+      <div class="kpi-sub">+9,6% vs Julho → voltar ao nível de Junho</div>
+    </div>
+    <div class="kpi" style="border-color:var(--gold);text-align:center;">
+      <div class="kpi-label">Meta Faturamento</div>
+      <div class="kpi-value gold" style="font-size:2.4rem;">R$122k+</div>
+      <div class="kpi-sub">+9,2% vs Julho → recuperar patamar Junho</div>
+    </div>
+    <div class="kpi" style="border-color:var(--gold);text-align:center;">
+      <div class="kpi-label">Meta Novos Clientes</div>
+      <div class="kpi-value gold" style="font-size:2.4rem;">280+</div>
+      <div class="kpi-sub">+20,7% vs Julho → recuperar aquisição</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ABA CRM ========== -->
+<div id="tab-crm" class="content">
+
+  <div class="section-title">Segmentação de Clientes — Julho 2026</div>
+  <div class="grid grid-4" style="margin-bottom:24px;">
+    <div class="kpi" style="border-color:var(--green);">
+      <div class="kpi-label">Novos Clientes</div>
+      <div class="kpi-value green">220</div>
+      <div class="kpi-delta down">↓ vs Junho (308)</div>
+      <div class="kpi-sub">Primeira compra no restaurante</div>
+    </div>
+    <div class="kpi" style="border-color:var(--gold);">
+      <div class="kpi-label">Clientes Frequentes</div>
+      <div class="kpi-value gold">173</div>
+      <div class="kpi-delta down">↓ 16,4% vs Junho (207)</div>
+      <div class="kpi-sub">Compraram 2+ vezes no mês</div>
+    </div>
+    <div class="kpi" style="border-color:var(--orange);">
+      <div class="kpi-label">Clientes em Alerta</div>
+      <div class="kpi-value" style="color:var(--orange);">1.109</div>
+      <div class="kpi-delta down">↑ 17,7% vs Junho (942) ⚠️</div>
+      <div class="kpi-sub">Não compram há 30–60 dias</div>
+    </div>
+    <div class="kpi" style="border-color:var(--red);">
+      <div class="kpi-label">Clientes Sumidos</div>
+      <div class="kpi-value red">948</div>
+      <div class="kpi-delta neutral">Não compram há 60+ dias</div>
+      <div class="kpi-sub">Alvo: campanha reativação agressiva</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="margin-bottom:24px;">
+    <div class="chart-card">
+      <h3>Distribuição de Clientes — Julho 2026</h3>
+      <div class="chart-wrap"><canvas id="chartCRM"></canvas></div>
+    </div>
+    <div class="kpi" style="align-self:stretch;">
+      <div class="kpi-label" style="margin-bottom:12px;">Clientes Recuperados em Julho</div>
+      <div class="kpi-value gold" style="font-size:3rem;">507</div>
+      <div style="margin-top:16px; font-size:0.85rem; color:var(--muted); line-height:1.8;">
+        ✅ <strong style="color:var(--text)">507 clientes</strong> voltaram a comprar após inatividade<br>
+        ⚠️ Ainda há <strong style="color:var(--orange)">1.109 em alerta</strong> para reativar<br>
+        📱 <strong style="color:var(--text)">948 sumidos</strong> precisam de oferta mais agressiva<br><br>
+        <strong>Potencial de receita:</strong> se 20% dos 1.109 em alerta fizer 1 pedido = <span style="color:var(--gold)">222 pedidos</span> × R$95 = <span style="color:var(--gold)">~R$21.000</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Campanhas de Marketing — Julho 2026</div>
+  <div class="table-card" style="margin-bottom:24px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Promoção</th><th>Pedidos</th><th>Vendas</th><th>Investido (Loja)</th><th>ROI</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:600;">🤖 Campanha Inteligente (113)</td>
+          <td>741</td>
+          <td>R$69.021,20</td>
+          <td>R$3.701,52</td>
+          <td class="roi-high">R$17,65 ⭐</td>
+          <td><span class="badge badge-green">TOP</span></td>
+        </tr>
+        <tr>
+          <td>🎯 Hits (19)</td>
+          <td>90</td>
+          <td>R$6.637,10</td>
+          <td>R$471,00</td>
+          <td class="roi-high">R$13,09</td>
+          <td><span class="badge badge-gold">BOM</span></td>
+        </tr>
+        <tr>
+          <td>🎟️ Cupom de R$12</td>
+          <td>40</td>
+          <td>R$2.861,00</td>
+          <td>R$480,00</td>
+          <td>R$4,96</td>
+          <td><span class="badge badge-orange">REVISAR</span></td>
+        </tr>
+        <tr>
+          <td>🎟️ Cupom R$12 + Hits (2)</td>
+          <td>34</td>
+          <td>R$2.092,00</td>
+          <td>R$408,00</td>
+          <td>R$4,13</td>
+          <td><span class="badge badge-orange">REVISAR</span></td>
+        </tr>
+        <tr>
+          <td>🚚 Entrega Grátis + Hits (6)</td>
+          <td>15</td>
+          <td>R$745,00</td>
+          <td>R$159,80</td>
+          <td>R$3,66</td>
+          <td><span class="badge badge-orange">AVALIAR</span></td>
+        </tr>
+        <tr>
+          <td>🏷️ CI - 22% off + outros (3)</td>
+          <td>3</td>
+          <td>R$191,00</td>
+          <td>R$9,99</td>
+          <td>R$11,11</td>
+          <td><span class="badge badge-gold">TESTE</span></td>
+        </tr>
+        <tr style="background:#11112a;">
+          <td style="font-weight:700; color:var(--gold);">TOTAL (8 promoções)</td>
+          <td style="font-weight:700;">923</td>
+          <td style="font-weight:700;">R$81.547,30</td>
+          <td style="font-weight:700;">R$5.230,31</td>
+          <td class="roi-high">R$15,59</td>
+          <td><span class="badge badge-green">✅ ÓTIMO</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="alert gold">
+      <h4 style="color:var(--gold)">🎯 Campanha Inteligente — Destaque do Mês</h4>
+      <p>80% dos pedidos com promoção vieram da Campanha Inteligente (741 de 923). ROI de R$17,65 significa que cada R$1 investido gerou R$17,65 em vendas. Em Junho o ROI era R$17,01 — manteve performance excelente. <strong>Recomendação: aumentar orçamento para R$250/dia.</strong></p>
+    </div>
+    <div class="alert orange">
+      <h4 style="color:var(--orange)">📊 Cupom R$12 — ROI abaixo do esperado</h4>
+      <p>O cupom de R$12 gerou ROI de R$4,96 — positivo mas baixo comparado à CI. Sugere que os clientes em alerta precisam de um incentivo maior. <strong>Recomendação: testar R$22 off para aumentar taxa de conversão e ticket médio dos reativados.</strong></p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// TAB SWITCH
+function showTab(name) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  setTimeout(initCharts, 100);
+}
+
+// CHART DEFAULTS
+Chart.defaults.color = '#8888aa';
+Chart.defaults.borderColor = '#2a2a4a';
+
+const meses = ['Maio 2026', 'Junho 2026', 'Julho 2026'];
+const red = '#E53935';
+const gold = '#FFD700';
+const green = '#00C853';
+const orange = '#FF6D00';
+const muted = '#8888aa';
+
+let chartsInit = false;
+function initCharts() {
+  if (chartsInit) return;
+  chartsInit = true;
+
+  const opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#2a2a4a' } }, y: { grid: { color: '#2a2a4a' } } } };
+
+  // Avaliações donut
+  if (document.getElementById('chartAval')) {
+    new Chart(document.getElementById('chartAval'), {
+      type: 'doughnut',
+      data: {
+        labels: ['5 ★ (548)', '4 ★ (23)', '3 ★ (3)', '2 ★ (3)', '1 ★ (1)'],
+        datasets: [{ data: [548, 23, 3, 3, 1], backgroundColor: [gold, '#FFA000', '#FF6D00', '#E53935', '#8888aa'], borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'right', labels: { color: '#8888aa', font: { size: 11 } } } } }
+    });
+  }
+
+  // Pedidos
+  if (document.getElementById('chartPedidos')) {
+    new Chart(document.getElementById('chartPedidos'), {
+      type: 'bar',
+      data: {
+        labels: meses,
+        datasets: [{ data: [1021, 1287, 1168], backgroundColor: [muted, green, gold], borderRadius: 6 }]
+      },
+      options: { ...opts, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y + ' pedidos' } } } }
+    });
+  }
+
+  // Faturamento
+  if (document.getElementById('chartFaturamento')) {
+    new Chart(document.getElementById('chartFaturamento'), {
+      type: 'bar',
+      data: {
+        labels: meses,
+        datasets: [{ data: [99634, 124057, 111687], backgroundColor: [muted, green, gold], borderRadius: 6 }]
+      },
+      options: { ...opts, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'R$ ' + ctx.parsed.y.toLocaleString('pt-BR') } } } }
+    });
+  }
+
+  // Novos clientes
+  if (document.getElementById('chartNovos')) {
+    new Chart(document.getElementById('chartNovos'), {
+      type: 'bar',
+      data: {
+        labels: meses,
+        datasets: [{ data: [224, 308, 232], backgroundColor: [muted, green, orange], borderRadius: 6 }]
+      },
+      options: { ...opts }
+    });
+  }
+
+  // Ticket
+  if (document.getElementById('chartTicket')) {
+    new Chart(document.getElementById('chartTicket'), {
+      type: 'line',
+      data: {
+        labels: meses,
+        datasets: [{ data: [97.58, 96.39, 95.62], borderColor: gold, backgroundColor: '#FFD70022', tension: 0.4, fill: true, pointBackgroundColor: gold, pointRadius: 6 }]
+      },
+      options: { ...opts, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'R$ ' + ctx.parsed.y.toFixed(2) } } } }
+    });
+  }
+
+  // Frequentes
+  if (document.getElementById('chartFreq')) {
+    new Chart(document.getElementById('chartFreq'), {
+      type: 'bar',
+      data: {
+        labels: meses,
+        datasets: [{ data: [131, 207, 173], backgroundColor: [muted, green, orange], borderRadius: 6 }]
+      },
+      options: { ...opts }
+    });
+  }
+
+  // Alerta
+  if (document.getElementById('chartAlerta')) {
+    new Chart(document.getElementById('chartAlerta'), {
+      type: 'bar',
+      data: {
+        labels: meses,
+        datasets: [{ data: [924, 942, 1109], backgroundColor: [green, orange, red], borderRadius: 6 }]
+      },
+      options: { ...opts }
+    });
+  }
+
+  // Promos
+  if (document.getElementById('chartPromos')) {
+    new Chart(document.getElementById('chartPromos'), {
+      type: 'bar',
+      data: {
+        labels: ['Camp. Inteligente', 'Hits', 'Cupom R$12', 'Cupom+Hits', 'Entrega Grátis', 'Outros'],
+        datasets: [{ label: 'Pedidos', data: [741, 90, 40, 34, 15, 3], backgroundColor: [gold, '#FFA000', orange, '#FF6D00', muted, '#555588'], borderRadius: 4 }]
+      },
+      options: { ...opts, indexAxis: 'y', plugins: { legend: { display: false } } }
+    });
+  }
+
+  // CRM donut
+  if (document.getElementById('chartCRM')) {
+    new Chart(document.getElementById('chartCRM'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Novos (220)', 'Frequentes (173)', 'Em Alerta (1.109)', 'Sumidos (948)', 'Recuperados (507)'],
+        datasets: [{ data: [220, 173, 1109, 948, 507], backgroundColor: [green, gold, orange, red, '#5555ff'], borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'right', labels: { color: '#8888aa', font: { size: 10 } } } } }
+    });
+  }
+}
+
+// Init on load
+window.addEventListener('load', () => setTimeout(initCharts, 300));
+</script>
+</body>
+</html>
